@@ -1,6 +1,0 @@
-@PixelPerfect.Server_HostAddress = http://localhost:5035
-
-GET {{PixelPerfect.Server_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
