@@ -1,0 +1,2 @@
+# PixelPerfect
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3c44922c34f749ee9ca9027184562c44)](https://app.codacy.com/gh/NerdNextDoor-Technologies/PixelPerfect?utm_source=github.com&utm_medium=referral&utm_content=NerdNextDoor-Technologies/PixelPerfect&utm_campaign=Badge_Grade)
