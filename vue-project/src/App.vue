@@ -1,24 +1,24 @@
 <template>
   <div id="app">
     <h1>Image Resizer</h1>
-    <input type="file" @change="onFileChange" accept="image/*"><br>
+    <input type="file" @change="onFileChange" accept="image/*" :disabled="isDownloading"><br>
     <div v-if="currentDimensionsVisible">
       <p>Current Dimensions: <span>{{ currentWidth }}</span> x <span>{{ currentHeight }}</span></p>
     </div>
     <div v-if="showResizeFields">
-      <label for="width">Width:</label>
-      <input type="number" v-model="width" class="input-width" placeholder="Enter width"><br>
-      <label for="height">Height:</label>
-      <input type="number" v-model="height" class="input-height" placeholder="Enter height"><br>
-      <button @click="submitResize">Submit</button><br>
-      <button @click="goBack">Go Back</button>
+      <label for="targetWidth">Width:</label>
+      <input type="number" v-model="targetWidth" class="input-width" placeholder="Enter target width"><br>
+      <label for="targetHeight">Height:</label>
+      <input type="number" v-model="targetHeight" class="input-height" placeholder="Enter target height"><br>
+      <button @click="submitResize" :disabled="isDownloading">Submit</button><br>
+      <button @click="goBack" :disabled="isDownloading">Go Back</button>
     </div>
     <div v-else>
-      <button @click="showResizeFields = true">Resize Image</button><br>
-      <button @click="submitReduceTo1MB">Reduce Image Size to 1MB</button><br>
+      <button @click="showResizeFields = true" :disabled="isDownloading">Resize Image</button><br>
+      <button @click="submitReduceTo1MB" :disabled="isDownloading">Reduce Image Size to 1MB</button><br>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
-    <a :href="downloadLink" v-if="downloadLink" :download="downloadFileName">{{ downloadLinkText }}</a>
+    <p v-if="isDownloading" class="downloading-message">Downloading... please wait</p>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
   </div>
 </template>
@@ -30,14 +30,12 @@ export default {
       currentDimensionsVisible: false,
       currentWidth: null,
       currentHeight: null,
-      width: null,
-      height: null,
-      downloadLink: '',
-      downloadLinkText: '',
-      downloadFileName: '',
+      targetWidth: null,
+      targetHeight: null,
       errorMessage: '',
       showResizeFields: false,
-      currentImageSrc: ''
+      currentImageSrc: '',
+      isDownloading: false
     };
   },
   methods: {
@@ -71,17 +69,15 @@ export default {
       const img = new Image();
       img.src = this.currentImageSrc;
       img.onload = () => {
-        const width = this.width ? parseInt(this.width) : img.width;
-        const height = this.height ? parseInt(this.height) : (img.height / img.width) * width;
+        const targetWidth = this.targetWidth ? parseInt(this.targetWidth) : img.width;
+        const targetHeight = this.targetHeight ? parseInt(this.targetHeight) : (img.height / img.width) * targetWidth;
 
-        if (!validateDimensions(width, height, (message) => this.displayError(message))) return;
+        if (!validateDimensions(targetWidth, targetHeight, (message) => this.displayError(message))) return;
 
         try {
           const canvas = this.$refs.canvas;
-          const resizedImageURL = resizeImage(img, width, height, canvas);
-          this.downloadLink = resizedImageURL;
-          this.downloadFileName = 'resized-image.jpg';
-          this.downloadLinkText = 'Download Resized Image';
+          const resizedImageURL = resizeImage(img, targetWidth, targetHeight, canvas);
+          this.startDownload(resizedImageURL, 'resized-image.jpg');
         } catch (error) {
           this.displayError(error.message);
         }
@@ -96,18 +92,28 @@ export default {
         try {
           const canvas = this.$refs.canvas;
           const reducedImageURL = reduceImageTo1MB(img, canvas);
-          this.downloadLink = reducedImageURL;
-          this.downloadFileName = 'reduced-size-image.jpg';
-          this.downloadLinkText = 'Download Reduced Size Image';
+          this.startDownload(reducedImageURL, 'reduced-size-image.jpg');
         } catch (error) {
           this.displayError(error.message);
         }
       };
     },
+    startDownload(dataURL, fileName) {
+      this.isDownloading = true;
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => {
+        this.isDownloading = false;
+      }, 2000); // Simulating a delay for the download process
+    },
     goBack() {
       this.showResizeFields = false;
-      this.width = null;
-      this.height = null;
+      this.targetWidth = null;
+      this.targetHeight = null;
       this.errorMessage = '';
     },
     displayError(message) {
@@ -118,11 +124,11 @@ export default {
 
 // Utility functions defined within the same file
 
-function resizeImage(img, width, height, canvas) {
+function resizeImage(img, targetWidth, targetHeight, canvas) {
   const ctx = canvas.getContext('2d');
-  canvas.width = width;
-  canvas.height = height;
-  ctx.drawImage(img, 0, 0, width, height);
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
   return canvas.toDataURL('image/jpeg');
 }
 
@@ -190,7 +196,7 @@ label {
 }
 
 .input-width {
-  margin-left: 10px;
+  margin-left: 5px;
   margin-bottom: 10px;
   padding: 5px;
   width: 200px;
@@ -216,18 +222,14 @@ button:hover {
   background-color: #0056b3;
 }
 
-a {
-  margin-top: 10px;
-  display: inline-block;
-  padding: 10px 15px;
-  background-color: #28a745;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
-a:hover {
-  background-color: #218838;
+.downloading-message {
+  color: green;
+  margin-top: 10px;
 }
 
 .error {
