@@ -11,15 +11,17 @@
       <label for="height">Height:</label>
       <input type="number" v-model="height" class="input-height" placeholder="Enter height"><br>
       <button @click="resizeImageHandler">Submit</button><br>
+      <button @click="goBack">Go Back</button>
     </div>
-    <button @click="showResizeFields = true">Resize Image</button>
-    <button @click="reduceImageSizeTo1MBHandler">Reduce Image Size to 1MB</button><br>
+    <div v-else>
+      <button @click="showResizeFields = true">Resize Image</button><br>
+      <button @click="reduceImageSizeTo1MBHandler">Reduce Image Size to 1MB</button><br>
+    </div>
     <canvas ref="canvas" style="display:none;"></canvas>
     <a :href="downloadLink" v-if="downloadLink" :download="downloadFileName">{{ downloadLinkText }}</a>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
   </div>
 </template>
-
 
 
 
@@ -137,12 +139,19 @@ export default {
         }
       };
     },
+    goBack() {
+      this.showResizeFields = false;
+      this.width = null;
+      this.height = null;
+      this.errorMessage = '';
+    },
     displayError(message) {
       this.errorMessage = message;
     }
   }
 };
 </script>
+
 
 
 
@@ -177,14 +186,13 @@ label {
 }
 
 .input-width {
-  margin-left: 10px; /* Adjust the value as needed */
+  margin-left: 5px; /* Adjust the value as needed */
   margin-bottom: 10px;
   padding: 5px;
   width: 200px;
 }
 
 .input-height {
-  margin-left: 5px;
   margin-bottom: 10px;
   padding: 5px;
   width: 200px;
@@ -223,4 +231,5 @@ a:hover {
   margin-top: 10px;
 }
 </style>
+
 
