@@ -10,20 +10,18 @@
       <input type="number" v-model="width" class="input-width" placeholder="Enter width"><br>
       <label for="height">Height:</label>
       <input type="number" v-model="height" class="input-height" placeholder="Enter height"><br>
-      <button @click="resizeImageHandler">Submit</button><br>
+      <button @click="submitResize">Submit</button><br>
       <button @click="goBack">Go Back</button>
     </div>
     <div v-else>
       <button @click="showResizeFields = true">Resize Image</button><br>
-      <button @click="reduceImageSizeTo1MBHandler">Reduce Image Size to 1MB</button><br>
+      <button @click="submitReduceTo1MB">Reduce Image Size to 1MB</button><br>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
     <a :href="downloadLink" v-if="downloadLink" :download="downloadFileName">{{ downloadLinkText }}</a>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
   </div>
 </template>
-
-
 
 <script>
 export default {
@@ -57,7 +55,7 @@ export default {
           this.currentDimensionsVisible = true;
           this.currentWidth = img.width;
           this.currentHeight = img.height;
-          this.currentImageSrc = e.target.result; // Save the image source
+          this.currentImageSrc = e.target.result;
         };
         img.onerror = () => {
           this.displayError("Invalid image file.");
@@ -69,73 +67,40 @@ export default {
       };
       reader.readAsDataURL(file);
     },
-    validateDimensions(width, height) {
-      const product = width * height;
-      if (width <= 0) {
-        this.displayError("The width cannot be negative or zero. Please enter a width greater than 0.");
-        return false;
-      }
-      if (height <= 0) {
-        this.displayError("The height cannot be negative or zero. Please enter a height greater than 0.");
-        return false;
-      }
-      if (product > 25600000) {
-        this.displayError("The product of width and height must not exceed 25,600,000. Please enter valid dimensions.");
-        return false;
-      }
-      this.errorMessage = '';
-      return true;
-    },
-    resizeImageHandler() {
+    submitResize() {
       const img = new Image();
       img.src = this.currentImageSrc;
       img.onload = () => {
         const width = this.width ? parseInt(this.width) : img.width;
         const height = this.height ? parseInt(this.height) : (img.height / img.width) * width;
 
-        if (!this.validateDimensions(width, height)) return;
+        if (!validateDimensions(width, height, (message) => this.displayError(message))) return;
 
         try {
           const canvas = this.$refs.canvas;
-          const ctx = canvas.getContext('2d');
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const resizedImageURL = canvas.toDataURL('image/jpeg');
+          const resizedImageURL = resizeImage(img, width, height, canvas);
           this.downloadLink = resizedImageURL;
           this.downloadFileName = 'resized-image.jpg';
           this.downloadLinkText = 'Download Resized Image';
         } catch (error) {
-          this.displayError("Error processing image: " + error.message);
+          this.displayError(error.message);
         }
       };
     },
-    reduceImageSizeTo1MBHandler() {
+    submitReduceTo1MB() {
       const img = new Image();
       img.src = this.currentImageSrc;
       img.onload = () => {
-        if (!this.validateDimensions(img.width, img.height)) return;
+        if (!validateDimensions(img.width, img.height, (message) => this.displayError(message))) return;
 
         try {
           const canvas = this.$refs.canvas;
-          const ctx = canvas.getContext('2d');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0, img.width, img.height);
-
-          let quality = 1.0;
-          let resizedImageURL = canvas.toDataURL('image/jpeg', quality);
-          while (resizedImageURL.length > 1 * 1024 * 1024 && quality > 0.1) {
-            quality -= 0.1;
-            resizedImageURL = canvas.toDataURL('image/jpeg', quality);
-          }
-
-          this.downloadLink = resizedImageURL;
+          const reducedImageURL = reduceImageTo1MB(img, canvas);
+          this.downloadLink = reducedImageURL;
           this.downloadFileName = 'reduced-size-image.jpg';
           this.downloadLinkText = 'Download Reduced Size Image';
         } catch (error) {
-          this.displayError("Error processing image: " + error.message);
+          this.displayError(error.message);
         }
       };
     },
@@ -150,10 +115,49 @@ export default {
     }
   }
 };
+
+// Utility functions defined within the same file
+
+function resizeImage(img, width, height, canvas) {
+  const ctx = canvas.getContext('2d');
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL('image/jpeg');
+}
+
+function reduceImageTo1MB(img, canvas) {
+  const ctx = canvas.getContext('2d');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+
+  let quality = 1.0;
+  let resizedImageURL = canvas.toDataURL('image/jpeg', quality);
+  while (resizedImageURL.length > 1 * 1024 * 1024 && quality > 0.1) {
+    quality -= 0.1;
+    resizedImageURL = canvas.toDataURL('image/jpeg', quality);
+  }
+  return resizedImageURL;
+}
+
+function validateDimensions(width, height, displayError) {
+  const product = width * height;
+  if (width <= 0) {
+    displayError("The width cannot be negative or zero. Please enter a width greater than 0.");
+    return false;
+  }
+  if (height <= 0) {
+    displayError("The height cannot be negative or zero. Please enter a height greater than 0.");
+    return false;
+  }
+  if (product > 25600000) {
+    displayError("The product of width and height must not exceed 25,600,000. Please enter valid dimensions.");
+    return false;
+  }
+  return true;
+}
 </script>
-
-
-
 
 <style>
 body {
@@ -186,7 +190,7 @@ label {
 }
 
 .input-width {
-  margin-left: 5px; /* Adjust the value as needed */
+  margin-left: 10px;
   margin-bottom: 10px;
   padding: 5px;
   width: 200px;
@@ -231,5 +235,3 @@ a:hover {
   margin-top: 10px;
 }
 </style>
-
-
