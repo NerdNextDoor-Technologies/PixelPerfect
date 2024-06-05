@@ -1,48 +1,65 @@
 <template>
   <div id="app">
     <h1>Image Resizer</h1>
-    <input type="file" @change="onFileChange" accept="image/*" :disabled="isDownloading"><br>
-    <div v-if="currentDimensionsVisible">
-      <p>Current Dimensions: <span>{{ currentWidth }}</span> x <span>{{ currentHeight }}</span></p>
+    <input type="file" @change="onFileChange" accept="image/*" :disabled="appState.isDownloading"><br>
+    <div v-if="imageProperties.currentDimensionsVisible">
+      <p>Current Dimensions: <span>{{ imageProperties.currentWidth }}</span> x <span>{{ imageProperties.currentHeight }}</span></p>
     </div>
-    <div v-if="showResizeFields">
+    <div v-if="appState.showResizeFields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="targetWidth" class="input-width" placeholder="Enter target width" @input="validateDimensions"><br>
+      <input type="number" v-model="imageProperties.targetWidth" class="input-width" placeholder="Enter target width" @input="validateDimensions"><br>
       <p v-if="errors.width" class="error">{{ errors.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="targetHeight" class="input-height" placeholder="Enter target height" @input="validateDimensions"><br>
+      <input type="number" v-model="imageProperties.targetHeight" class="input-height" placeholder="Enter target height" @input="validateDimensions"><br>
       <p v-if="errors.height" class="error">{{ errors.height }}</p>
-      <button @click="submitResize" :disabled="isDownloading || hasErrors">Submit</button><br>
-      <button @click="goBack" :disabled="isDownloading">Go Back</button>
+      <button @click="submitResize" :disabled="appState.isDownloading || hasErrors">Submit</button><br>
+      <button @click="goBack" :disabled="appState.isDownloading">Go Back</button>
     </div>
     <div v-else>
-      <button @click="showResizeFields = true" :disabled="isDownloading">Resize Image</button><br>
-      <button @click="submitReduceTo1MB" :disabled="isDownloading">Reduce Image Size to 1MB</button><br>
+      <button @click="appState.showResizeFields = true" :disabled="appState.isDownloading">Resize Image</button><br>
+      <button @click="submitReduceTo1MB" :disabled="appState.isDownloading">Reduce Image Size to 1MB</button><br>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
-    <p v-if="isDownloading" class="downloading-message">Downloading... please wait</p>
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+    <p v-if="appState.isDownloading" class="downloading-message">Downloading... please wait</p>
+    <p v-if="appState.errorMessage" class="error">{{ appState.errorMessage }}</p>
   </div>
 </template>
 
 
+
 <script>
+class ImageProperties {
+  constructor() {
+    this.currentDimensionsVisible = false;
+    this.currentWidth = null;
+    this.currentHeight = null;
+    this.targetWidth = null;
+    this.targetHeight = null;
+    this.currentImageSrc = '';
+  }
+}
+
+class Errors {
+  constructor() {
+    this.width = '';
+    this.height = '';
+  }
+}
+
+class AppState {
+  constructor() {
+    this.isDownloading = false;
+    this.showResizeFields = false;
+    this.errorMessage = '';
+  }
+}
+
 export default {
   data() {
     return {
-      currentDimensionsVisible: false,
-      currentWidth: null,
-      currentHeight: null,
-      targetWidth: null,
-      targetHeight: null,
-      errorMessage: '',
-      showResizeFields: false,
-      currentImageSrc: '',
-      isDownloading: false,
-      errors: {
-        width: '',
-        height: ''
-      }
+      imageProperties: new ImageProperties(),
+      errors: new Errors(),
+      appState: new AppState(),
     };
   },
   methods: {
@@ -52,15 +69,14 @@ export default {
         this.displayError("No file selected.");
         return;
       }
-
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-          this.currentDimensionsVisible = true;
-          this.currentWidth = img.width;
-          this.currentHeight = img.height;
-          this.currentImageSrc = e.target.result;
+          this.imageProperties.currentDimensionsVisible = true;
+          this.imageProperties.currentWidth = img.width;
+          this.imageProperties.currentHeight = img.height;
+          this.imageProperties.currentImageSrc = e.target.result;
         };
         img.onerror = () => {
           this.displayError("Invalid image file.");
@@ -73,8 +89,8 @@ export default {
       reader.readAsDataURL(file);
     },
     validateDimensions() {
-      const width = parseInt(this.targetWidth);
-      const height = parseInt(this.targetHeight);
+      const width = parseInt(this.imageProperties.targetWidth);
+      const height = parseInt(this.imageProperties.targetHeight);
       this.errors.width = width <= 0 ? "Width must be greater than 0." : '';
       this.errors.height = height <= 0 ? "Height must be greater than 0." : '';
       if (width * height > 25600000) {
@@ -84,13 +100,11 @@ export default {
     },
     submitResize() {
       const img = new Image();
-      img.src = this.currentImageSrc;
+      img.src = this.imageProperties.currentImageSrc;
       img.onload = () => {
-        const targetWidth = this.targetWidth ? parseInt(this.targetWidth) : img.width;
-        const targetHeight = this.targetHeight ? parseInt(this.targetHeight) : (img.height / img.width) * targetWidth;
-
+        const targetWidth = this.imageProperties.targetWidth ? parseInt(this.imageProperties.targetWidth) : img.width;
+        const targetHeight = this.imageProperties.targetHeight ? parseInt(this.imageProperties.targetHeight) : (img.height / img.width) * targetWidth;
         if (!validateDimensions(targetWidth, targetHeight, (message) => this.displayError(message))) return;
-
         try {
           const canvas = this.$refs.canvas;
           const resizedImageURL = resizeImage(img, targetWidth, targetHeight, canvas);
@@ -102,10 +116,9 @@ export default {
     },
     submitReduceTo1MB() {
       const img = new Image();
-      img.src = this.currentImageSrc;
+      img.src = this.imageProperties.currentImageSrc;
       img.onload = () => {
         if (!validateDimensions(img.width, img.height, (message) => this.displayError(message))) return;
-
         try {
           const canvas = this.$refs.canvas;
           const reducedImageURL = reduceImageTo1MB(img, canvas);
@@ -116,7 +129,7 @@ export default {
       };
     },
     startDownload(dataURL, fileName) {
-      this.isDownloading = true;
+      this.appState.isDownloading = true;
       const link = document.createElement('a');
       link.href = dataURL;
       link.download = fileName;
@@ -124,23 +137,22 @@ export default {
       link.click();
       document.body.removeChild(link);
       setTimeout(() => {
-        this.isDownloading = false;
-      }, 2000); // Simulating a delay for the download process
+        this.appState.isDownloading = false;
+      }, 2000);
     },
     goBack() {
-      this.showResizeFields = false;
-      this.targetWidth = null;
-      this.targetHeight = null;
-      this.errorMessage = '';
+      this.appState.showResizeFields = false;
+      this.imageProperties.targetWidth = null;
+      this.imageProperties.targetHeight = null;
+      this.appState.errorMessage = '';
     },
     displayError(message) {
-      this.errorMessage = message;
-    }
-  }
+      this.appState.errorMessage = message;
+    },
+  },
 };
 
 // Utility functions defined within the same file
-
 function resizeImage(img, targetWidth, targetHeight, canvas) {
   const ctx = canvas.getContext('2d');
   canvas.width = targetWidth;
@@ -154,7 +166,6 @@ function reduceImageTo1MB(img, canvas) {
   canvas.width = img.width;
   canvas.height = img.height;
   ctx.drawImage(img, 0, 0, img.width, img.height);
-
   let quality = 1.0;
   let resizedImageURL = canvas.toDataURL('image/jpeg', quality);
   while (resizedImageURL.length > 1 * 1024 * 1024 && quality > 0.1) {
