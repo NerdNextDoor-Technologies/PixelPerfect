@@ -1,0 +1,1 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/4438c7944b5e4581a22aa99974ede4f8)](https://app.codacy.com/gh/NerdNextDoor-Technologies/PixelPerfect/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
