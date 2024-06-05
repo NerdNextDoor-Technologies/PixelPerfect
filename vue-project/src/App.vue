@@ -7,10 +7,12 @@
     </div>
     <div v-if="showResizeFields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="targetWidth" class="input-width" placeholder="Enter target width"><br>
+      <input type="number" v-model="targetWidth" class="input-width" placeholder="Enter target width" @input="validateDimensions"><br>
+      <p v-if="errors.width" class="error">{{ errors.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="targetHeight" class="input-height" placeholder="Enter target height"><br>
-      <button @click="submitResize" :disabled="isDownloading">Submit</button><br>
+      <input type="number" v-model="targetHeight" class="input-height" placeholder="Enter target height" @input="validateDimensions"><br>
+      <p v-if="errors.height" class="error">{{ errors.height }}</p>
+      <button @click="submitResize" :disabled="isDownloading || hasErrors">Submit</button><br>
       <button @click="goBack" :disabled="isDownloading">Go Back</button>
     </div>
     <div v-else>
@@ -22,6 +24,7 @@
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
   </div>
 </template>
+
 
 <script>
 export default {
@@ -35,7 +38,11 @@ export default {
       errorMessage: '',
       showResizeFields: false,
       currentImageSrc: '',
-      isDownloading: false
+      isDownloading: false,
+      errors: {
+        width: '',
+        height: ''
+      }
     };
   },
   methods: {
@@ -64,6 +71,16 @@ export default {
         this.displayError("Error reading file.");
       };
       reader.readAsDataURL(file);
+    },
+    validateDimensions() {
+      const width = parseInt(this.targetWidth);
+      const height = parseInt(this.targetHeight);
+      this.errors.width = width <= 0 ? "Width must be greater than 0." : '';
+      this.errors.height = height <= 0 ? "Height must be greater than 0." : '';
+      if (width * height > 25600000) {
+        this.errors.width = "The product of width and height must not exceed 25,600,000.";
+        this.errors.height = "The product of width and height must not exceed 25,600,000.";
+      }
     },
     submitResize() {
       const img = new Image();
