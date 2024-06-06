@@ -30,7 +30,9 @@
 <script>
 class ImageProperties {
   constructor() {
-    this.currentDimensionsVisible = false;
+    this.currentDimensionsVisible = false; //move to app state
+    //currentResolution 
+    //targetResolution : ImageResolution
     this.currentWidth = null;
     this.currentHeight = null;
     this.targetWidth = null;
@@ -65,6 +67,9 @@ export default {
   methods: {
     onFileChange(event) {
       const file = event.target.files[0];
+
+      // img= new Image(file)
+      //console.log(img.width)
       if (!file) {
         this.displayError("No file selected.");
         return;
@@ -98,7 +103,7 @@ export default {
         this.errors.height = "The product of width and height must not exceed 25,600,000.";
       }
     },
-    submitResize() {
+    submitResize() { //resizeImageHandler
       const img = new Image();
       img.src = this.imageProperties.currentImageSrc;
       img.onload = () => {
@@ -106,7 +111,7 @@ export default {
         const targetHeight = this.imageProperties.targetHeight ? parseInt(this.imageProperties.targetHeight) : (img.height / img.width) * targetWidth;
         if (!validateDimensions(targetWidth, targetHeight, (message) => this.displayError(message))) return;
         try {
-          const canvas = this.$refs.canvas;
+          const canvas = this.$refs.canvas;// check if this can be moved to a global level
           const resizedImageURL = resizeImage(img, targetWidth, targetHeight, canvas);
           this.startDownload(resizedImageURL, 'resized-image.jpg');
         } catch (error) {
