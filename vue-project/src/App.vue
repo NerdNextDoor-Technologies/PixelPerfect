@@ -27,122 +27,14 @@
 
 
 
-
-
 <script>
 
+import { ImageProperties, Errors, AppState } from '../models/image/ImageModels.js';
+
+import { resizeImage, reduceImageTo1MB, validateDimensions } from '../helpers/UtilityFunctions.js';
+
+
 let canvas;
-
-class ImageProperties {
-  /**
-   * @type {number}
-   */
-  currentWidth;
-  
-  /**
-   * @type {number}
-   */
-  currentHeight;
-  
-  /**
-   * @type {number}
-   */
-  targetWidth;
-  
-  /**
-   * @type {number}
-   */
-  targetHeight;
-  
-  /**
-   * @type {string}
-   */
-  currentImageSrc;
-
-  constructor(file = null) {
-    this.currentWidth = 0;
-    this.currentHeight = 0;
-    this.targetWidth = 0;
-    this.targetHeight = 0;
-    this.currentImageSrc = '';
-
-    if (file) {
-      this.loadImage(file);
-    }
-  }
-
-  loadImage(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        this.currentDimensionsVisible = true;
-        this.currentWidth = img.width;
-        this.currentHeight = img.height;
-        this.currentImageSrc = e.target.result;
-      };
-      img.onerror = () => {
-        this.displayError("Invalid image file.");
-      };
-      img.src = e.target.result;
-    };
-    reader.onerror = () => {
-      this.displayError("Error reading file.");
-    };
-    reader.readAsDataURL(file);
-  }
-
-  displayError(message) {
-    console.error(message);
-  }
-}
-
-class Errors {
-  /**
-   * @type {string}
-   */
-  width;
-  
-  /**
-   * @type {string}
-   */
-  height;
-
-  constructor() {
-    this.width = '';
-    this.height = '';
-  }
-}
-
-class AppState {
-  /**
-   * @type {boolean}
-   */
-  isDownloading;
-  
-  /**
-   * @type {boolean}
-   */
-  showResizeFields;
-  
-  /**
-   * @type {boolean}
-   */
-  currentDimensionsVisible;
-  
-  /**
-   * @type {string}
-   */
-  errorMessage;
-
-  constructor() {
-    this.isDownloading = false;
-    this.showResizeFields = false;
-    this.currentDimensionsVisible = false;
-    this.errorMessage = '';
-  }
-}
-
 
 export default {
   data() {
@@ -231,45 +123,6 @@ export default {
   },
 };
 
-// Utility functions defined within the same file
-function resizeImage(img, targetWidth, targetHeight) {
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-  return canvas.toDataURL('image/jpeg');
-}
-
-function reduceImageTo1MB(img) {
-  canvas.width = img.width;
-  canvas.height = img.height;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, img.width, img.height);
-  let quality = 1.0;
-  let resizedImageURL = canvas.toDataURL('image/jpeg', quality);
-  while (resizedImageURL.length > 1 * 1024 * 1024 && quality > 0.1) {
-    quality -= 0.1;
-    resizedImageURL = canvas.toDataURL('image/jpeg', quality);
-  }
-  return resizedImageURL;
-}
-
-function validateDimensions(width, height, displayError) {
-  const product = width * height;
-  if (width <= 0) {
-    displayError("The width cannot be negative or zero. Please enter a width greater than 0.");
-    return false;
-  }
-  if (height <= 0) {
-    displayError("The height cannot be negative or zero. Please enter a height greater than 0.");
-    return false;
-  }
-  if (product > 25600000) {
-    displayError("The product of width and height must not exceed 25,600,000. Please enter valid dimensions.");
-    return false;
-  }
-  return true;
-}
 </script>
 
 <style>
