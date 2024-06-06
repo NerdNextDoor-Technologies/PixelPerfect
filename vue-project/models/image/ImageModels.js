@@ -1,6 +1,6 @@
 // models/image/ImageModels.js
 
-export class ImageProperties {
+export class imageData {
     /**
      * @type {number}
      */

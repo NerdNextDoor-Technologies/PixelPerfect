@@ -24,7 +24,7 @@ export function resizeImage(img, targetWidth, targetHeight) {
     return resizedImageURL;
   }
   
-  export function validateDimensions(width, height, displayError) {
+  export function validateImageDimensions(width, height, displayError) {
     const product = width * height;
     if (width <= 0) {
       displayError("The width cannot be negative or zero. Please enter a width greater than 0.");

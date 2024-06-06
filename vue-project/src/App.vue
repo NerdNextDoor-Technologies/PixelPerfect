@@ -2,18 +2,18 @@
   <div id="app">
     <h1>Image Resizer</h1>
     <input type="file" @change="onFileChange" accept="image/*" :disabled="appState.isDownloading"><br>
-    <div v-if="imageProperties.currentDimensionsVisible">
-      <p>Current Dimensions: <span>{{ imageProperties.currentWidth }}</span> x <span>{{ imageProperties.currentHeight }}</span></p>
+    <div v-if="imageData.currentDimensionsVisible">
+      <p>Current Dimensions: <span>{{ imageData.currentWidth }}</span> x <span>{{ imageData.currentHeight }}</span></p>
     </div>
     <div v-if="appState.showResizeFields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageProperties.targetWidth" class="input-width" placeholder="Enter target width" @input="validateDimensions"><br>
+      <input type="number" v-model="imageData.targetWidth" class="input-width" placeholder="Enter target width" @input="validateImageDimensions"><br>
       <p v-if="errors.width" class="error">{{ errors.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageProperties.targetHeight" class="input-height" placeholder="Enter target height" @input="validateDimensions"><br>
+      <input type="number" v-model="imageData.targetHeight" class="input-height" placeholder="Enter target height" @input="validateImageDimensions"><br>
       <p v-if="errors.height" class="error">{{ errors.height }}</p>
-      <button @click="submitResize" :disabled="appState.isDownloading || hasErrors">Submit</button><br>
-      <button @click="goBack" :disabled="appState.isDownloading">Go Back</button>
+      <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors">Submit</button><br>
+      <button @click="resetForm" :disabled="appState.isDownloading">Go Back</button>
     </div>
     <div v-else>
       <button @click="appState.showResizeFields = true" :disabled="appState.isDownloading">Resize Image</button><br>
@@ -29,9 +29,9 @@
 
 <script>
 
-import { ImageProperties, Errors, AppState } from '../models/image/ImageModels.js';
+import { imageData, Errors, AppState } from '../models/image/ImageModels.js';
 
-import { resizeImage, reduceImageTo1MB, validateDimensions } from '../helpers/UtilityFunctions.js';
+import { resizeImage, reduceImageTo1MB, validateImageDimensions } from '../helpers/UtilityFunctions.js';
 
 
 let canvas;
@@ -39,13 +39,13 @@ let canvas;
 export default {
   data() {
     return {
-      imageProperties: new ImageProperties(),
+      imageData: new imageData(),
       errors: new Errors(),
       appState: new AppState(),
     };
   },
   computed: {
-    hasErrors() {
+    hasValidationErrors() {
       return this.errors.width !== '' || this.errors.height !== '';
     }
   },
@@ -56,12 +56,12 @@ export default {
         this.displayError("No file selected.");
         return;
       }
-      this.imageProperties = new ImageProperties(file);
+      this.imageData = new imageData(file);
       this.appState.currentDimensionsVisible = true;
     },
-    validateDimensions() {
-      const width = this.imageProperties.targetWidth;
-      const height = this.imageProperties.targetHeight;
+    validateImageDimensions() {
+      const width = this.imageData.targetWidth;
+      const height = this.imageData.targetHeight;
       this.errors.width = width <= 0 ? "Width must be greater than 0." : '';
       this.errors.height = height <= 0 ? "Height must be greater than 0." : '';
       if (width * height > 25600000) {
@@ -69,17 +69,17 @@ export default {
         this.errors.height = "The product of width and height must not exceed 25,600,000.";
       }
     },
-    submitResize() {
+    resizeImage() {
       const img = new Image();
-      img.src = this.imageProperties.currentImageSrc;
+      img.src = this.imageData.currentImageSrc;
       img.onload = () => {
-        const targetWidth = this.imageProperties.targetWidth || img.width;
-        const targetHeight = this.imageProperties.targetHeight || (img.height / img.width) * targetWidth;
-        if (!validateDimensions(targetWidth, targetHeight, (message) => this.displayError(message))) return;
+        const targetWidth = this.imageData.targetWidth || img.width;
+        const targetHeight = this.imageData.targetHeight || (img.height / img.width) * targetWidth;
+        if (!validateImageDimensions(targetWidth, targetHeight, (message) => this.displayError(message))) return;
         try {
           canvas = document.createElement('canvas');
           const resizedImageURL = resizeImage(img, targetWidth, targetHeight);
-          this.startDownload(resizedImageURL, 'resized-image.jpg');
+          this.downloadImage(resizedImageURL, 'resized-image.jpg');
         } catch (error) {
           this.displayError(error.message);
         }
@@ -87,19 +87,19 @@ export default {
     },
     submitReduceTo1MB() {
       const img = new Image();
-      img.src = this.imageProperties.currentImageSrc;
+      img.src = this.imageData.currentImageSrc;
       img.onload = () => {
-        if (!validateDimensions(img.width, img.height, (message) => this.displayError(message))) return;
+        if (!validateImageDimensions(img.width, img.height, (message) => this.displayError(message))) return;
         try {
           canvas = document.createElement('canvas');
           const reducedImageURL = reduceImageTo1MB(img);
-          this.startDownload(reducedImageURL, 'reduced-size-image.jpg');
+          this.downloadImage(reducedImageURL, 'reduced-size-image.jpg');
         } catch (error) {
           this.displayError(error.message);
         }
       };
     },
-    startDownload(dataURL, fileName) {
+    downloadImage(dataURL, fileName) {
       this.appState.isDownloading = true;
       const link = document.createElement('a');
       link.href = dataURL;
@@ -111,10 +111,10 @@ export default {
         this.appState.isDownloading = false;
       }, 2000);
     },
-    goBack() {
+    resetForm() {
       this.appState.showResizeFields = false;
-      this.imageProperties.targetWidth = null;
-      this.imageProperties.targetHeight = null;
+      this.imageData.targetWidth = null;
+      this.imageData.targetHeight = null;
       this.appState.errorMessage = '';
     },
     displayError(message) {
