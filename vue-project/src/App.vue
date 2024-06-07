@@ -2,7 +2,7 @@
   <div id="app">
     <h1>Image Resizer</h1>
     <input type="file" @change="onFileChange" accept="image/*" :disabled="appState.isDownloading"><br>
-    <div v-if="imageData.currentDimensionsVisible">
+    <div v-if="imageData.currentImageSrc">
       <p>Current Dimensions: <span>{{ imageData.currentWidth }}</span> x <span>{{ imageData.currentHeight }}</span></p>
       <p>Current Size: <span>{{ (imageData.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
     </div>
@@ -24,10 +24,10 @@
       <label for="sizeOptions">Reduce Image Size:</label>
       <select v-model="selectedSize" @change="submitReduceToSelectedSize" :disabled="appState.isDownloading">
         <option value="" disabled>Select a size</option>
+        <option value="512000">500 KB</option>
         <option value="1048576">1 MB</option>
         <option value="2097152">2 MB</option>
         <option value="3145728">3 MB</option>
-        <option value="512000">500 KB</option>
       </select><br>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
@@ -39,11 +39,9 @@
 
 
 
-
 <script>
 
 import { imageData, Errors, AppState } from './models/image/ImageModel.js';
-
 import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
 
 let canvas;
@@ -69,8 +67,25 @@ export default {
         this.displayError("No file selected.");
         return;
       }
-      this.imageData = new imageData(file);
-      this.appState.currentDimensionsVisible = true;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          this.imageData.currentWidth = img.width;
+          this.imageData.currentHeight = img.height;
+          this.imageData.currentImageSrc = e.target.result;
+          this.imageData.currentFileSize = file.size;
+          this.appState.currentDimensionsVisible = true;
+        };
+        img.onerror = () => {
+          this.displayError("Invalid image file.");
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = () => {
+        this.displayError("Error reading file.");
+      };
+      reader.readAsDataURL(file);
     },
     validateImageDimensions() {
       const width = this.imageData.targetWidth;
@@ -160,6 +175,8 @@ export default {
   },
 };
 </script>
+
+
 
 
 
