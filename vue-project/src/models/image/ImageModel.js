@@ -43,6 +43,7 @@ export class imageData {
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
+          this.currentDimensionsVisible = true;
           this.currentWidth = img.width;
           this.currentHeight = img.height;
           this.currentImageSrc = e.target.result;
