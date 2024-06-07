@@ -4,6 +4,7 @@
     <input type="file" @change="onFileChange" accept="image/*" :disabled="appState.isDownloading"><br>
     <div v-if="imageData.currentDimensionsVisible">
       <p>Current Dimensions: <span>{{ imageData.currentWidth }}</span> x <span>{{ imageData.currentHeight }}</span></p>
+      <p>Current Size: <span>{{ (imageData.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
     </div>
     <div v-if="appState.showResizeFields">
       <label for="targetWidth">Width:</label>
@@ -20,7 +21,14 @@
     </div>
     <div v-else>
       <button @click="appState.showResizeFields = true" :disabled="appState.isDownloading">Resize Image</button><br>
-      <button @click="submitReduceTo1MB" :disabled="appState.isDownloading">Reduce Image Size to 1MB</button><br>
+      <label for="sizeOptions">Reduce Image Size:</label>
+      <select v-model="selectedSize" @change="submitReduceToSelectedSize" :disabled="appState.isDownloading">
+        <option value="" disabled>Select a size</option>
+        <option value="1048576">1 MB</option>
+        <option value="2097152">2 MB</option>
+        <option value="3145728">3 MB</option>
+        <option value="512000">500 KB</option>
+      </select><br>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
     <p v-if="appState.isDownloading" class="downloading-message">Downloading... please wait</p>
@@ -31,11 +39,12 @@
 
 
 
+
 <script>
 
 import { imageData, Errors, AppState } from './models/image/ImageModel.js';
 
-import { resizeImage, reduceImageTo1MB } from './helpers/ImageHelper.js';
+import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
 
 let canvas;
 
@@ -45,6 +54,7 @@ export default {
       imageData: new imageData(),
       errors: new Errors(),
       appState: new AppState(),
+      selectedSize: ''
     };
   },
   computed: {
@@ -103,7 +113,11 @@ export default {
         }
       };
     },
-    submitReduceTo1MB() {
+    submitReduceToSelectedSize() {
+      if (!this.selectedSize) {
+        this.displayError("Please select a size.");
+        return;
+      }
       const img = new Image();
       img.src = this.imageData.currentImageSrc;
       img.onload = () => {
@@ -115,8 +129,8 @@ export default {
 
         try {
           canvas = document.createElement('canvas');
-          const reducedImageURL = reduceImageTo1MB(img);
-          this.downloadImage(reducedImageURL, 'reduced-size-image.jpg');
+          const reducedImageURL = reduceImageToSize(img, parseInt(this.selectedSize));
+          this.downloadImage(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
           this.displayError(error.message);
         }
@@ -145,8 +159,8 @@ export default {
     },
   },
 };
-
 </script>
+
 
 
 <style>
@@ -211,6 +225,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
+select {
+  margin-top: 10px;
+  padding: 5px;
+  width: 215px;
+}
+
 .downloading-message {
   color: green;
   margin-top: 10px;
@@ -225,4 +245,5 @@ label input[type="checkbox"] {
   margin-left: 5px;
 }
 </style>
+
 
