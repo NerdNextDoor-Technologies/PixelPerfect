@@ -29,9 +29,9 @@
 
 <script>
 
-import { imageData, Errors, AppState } from './models/image/ImageModels.js';
+import { imageData, Errors, AppState } from './models/image/ImageModel.js';
 
-import { resizeImage, reduceImageTo1MB } from './helpers/UtilityFunctions.js';
+import { resizeImage, reduceImageTo1MB } from './helpers/ImageHelper.js';
 
 
 let canvas;

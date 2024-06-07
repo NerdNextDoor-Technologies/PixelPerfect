@@ -1,4 +1,4 @@
-// helpers/UtilityFunctions.js
+
 export function resizeImage(img, targetWidth, targetHeight) {
     const canvas = document.createElement('canvas');
     canvas.width = targetWidth;
@@ -23,20 +23,4 @@ export function resizeImage(img, targetWidth, targetHeight) {
     return resizedImageURL;
   }
   
-  export function validateImageDimensions(width, height, displayError) {
-    if (width <= 0) {
-      displayError("The width cannot be negative or zero. Please enter a width greater than 0.");
-      return false;
-    }
-    if (height <= 0) {
-      displayError("The height cannot be negative or zero. Please enter a height greater than 0.");
-      return false;
-    }
-    const product = width * height;
-    if (product > 25600000) {
-      displayError("The product of width and height must not exceed 25,600,000. Please enter valid dimensions.");
-      return false;
-    }
-    return true;
-  }
   
