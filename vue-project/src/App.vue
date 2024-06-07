@@ -29,7 +29,7 @@
 
 <script>
 
-import { imageData, Errors, AppState } from '../models/image/ImageModels.js';
+import { imageData, Errors, AppState, ImageResolution } from '../models/image/ImageModels.js';
 
 import { resizeImage, reduceImageTo1MB, validateImageDimensions } from '../helpers/UtilityFunctions.js';
 
@@ -75,21 +75,36 @@ export default {
       img.onload = () => {
         const targetWidth = this.imageData.targetWidth || img.width;
         const targetHeight = this.imageData.targetHeight || (img.height / img.width) * targetWidth;
-        if (!validateImageDimensions(targetWidth, targetHeight, (message) => this.displayError(message))) return;
+        
+        const isValid = new ImageResolution(targetWidth, targetHeight, img.width, img.height, this.displayError.bind(this));
+        if (!isValid) return;
+
+        this.imageData.targetWidth = isValid.targetWidth;
+        this.imageData.targetHeight = isValid.targetHeight;
+
         try {
           canvas = document.createElement('canvas');
-          const resizedImageURL = resizeImage(img, targetWidth, targetHeight);
+          const resizedImageURL = resizeImage(img, this.imageData.targetWidth, this.imageData.targetHeight);
           this.downloadImage(resizedImageURL, 'resized-image.jpg');
         } catch (error) {
           this.displayError(error.message);
         }
       };
     },
+
     submitReduceTo1MB() {
       const img = new Image();
       img.src = this.imageData.currentImageSrc;
       img.onload = () => {
-        if (!validateImageDimensions(img.width, img.height, (message) => this.displayError(message))) return;
+        const targetWidth = img.width;
+        const targetHeight = img.height;
+
+        const isValid = new ImageResolution(targetWidth, targetHeight, img.width, img.height, this.displayError.bind(this));
+        if (!isValid) return;
+
+        this.imageData.targetWidth = isValid.targetWidth;
+        this.imageData.targetHeight = isValid.targetHeight;
+
         try {
           canvas = document.createElement('canvas');
           const reducedImageURL = reduceImageTo1MB(img);

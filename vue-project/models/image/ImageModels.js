@@ -63,6 +63,27 @@ export class imageData {
       console.error(message);
     }
   }
+
+  export class ImageResolution {
+    constructor(targetWidth, targetHeight, currentWidth, currentHeight, displayError) {
+      if (!Number.isInteger(targetWidth) || !Number.isInteger(targetHeight)) {
+        displayError("Width and height must be integers.");
+        return null;
+      }
+      if (targetWidth <= 0 || targetHeight <= 0) {
+        displayError("Width and height must be positive values.");
+        return false;
+      }
+      if (targetWidth > currentWidth || targetHeight > currentHeight) {
+        displayError("Target dimensions must be less than or equal to current dimensions.");
+        return false;
+      }
+  
+      this.targetWidth = targetWidth;
+      this.targetHeight = targetHeight;
+      return true;
+    }
+  }
   
   export class Errors {
     /**
