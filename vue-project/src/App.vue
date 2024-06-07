@@ -29,9 +29,9 @@
 
 <script>
 
-import { imageData, Errors, AppState, ImageResolution } from '../models/image/ImageModels.js';
+import { imageData, Errors, AppState } from './models/image/ImageModels.js';
 
-import { resizeImage, reduceImageTo1MB, validateImageDimensions } from '../helpers/UtilityFunctions.js';
+import { resizeImage, reduceImageTo1MB } from './helpers/UtilityFunctions.js';
 
 
 let canvas;
@@ -76,11 +76,9 @@ export default {
         const targetWidth = this.imageData.targetWidth || img.width;
         const targetHeight = this.imageData.targetHeight || (img.height / img.width) * targetWidth;
         
-        const isValid = new ImageResolution(targetWidth, targetHeight, img.width, img.height, this.displayError.bind(this));
-        if (!isValid) return;
+        this.imageData.validateResolution(targetWidth, targetHeight, this.displayError.bind(this));
+        if (!this.imageData.isValid) return;
 
-        this.imageData.targetWidth = isValid.targetWidth;
-        this.imageData.targetHeight = isValid.targetHeight;
 
         try {
           canvas = document.createElement('canvas');
@@ -99,11 +97,8 @@ export default {
         const targetWidth = img.width;
         const targetHeight = img.height;
 
-        const isValid = new ImageResolution(targetWidth, targetHeight, img.width, img.height, this.displayError.bind(this));
-        if (!isValid) return;
-
-        this.imageData.targetWidth = isValid.targetWidth;
-        this.imageData.targetHeight = isValid.targetHeight;
+        this.imageData.validateResolution(targetWidth, targetHeight, this.displayError.bind(this));
+        if (!this.imageData.isValid) return;
 
         try {
           canvas = document.createElement('canvas');

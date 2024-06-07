@@ -43,7 +43,6 @@ export class imageData {
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-          this.currentDimensionsVisible = true;
           this.currentWidth = img.width;
           this.currentHeight = img.height;
           this.currentImageSrc = e.target.result;
@@ -59,31 +58,36 @@ export class imageData {
       reader.readAsDataURL(file);
     }
   
+    validateResolution(targetWidth, targetHeight, displayError) {
+      this.isValid = true;
+      this.errorMessage = '';
+  
+      if (!Number.isInteger(targetWidth) || !Number.isInteger(targetHeight)) {
+        this.isValid = false;
+        this.errorMessage = "Width and height must be integers.";
+        displayError(this.errorMessage);
+      } else if (targetWidth <= 0 || targetHeight <= 0) {
+        this.isValid = false;
+        this.errorMessage = "Width and height must be positive values.";
+        displayError(this.errorMessage);
+      } else if (targetWidth > this.currentWidth || targetHeight > this.currentHeight) {
+        this.isValid = false;
+        this.errorMessage = "Target dimensions must be less than or equal to current dimensions.";
+        displayError(this.errorMessage);
+      }
+  
+      if (this.isValid) {
+        this.targetWidth = targetWidth;
+        this.targetHeight = targetHeight;
+      }
+    }
+  
     displayError(message) {
       console.error(message);
     }
   }
 
-  export class ImageResolution {
-    constructor(targetWidth, targetHeight, currentWidth, currentHeight, displayError) {
-      if (!Number.isInteger(targetWidth) || !Number.isInteger(targetHeight)) {
-        displayError("Width and height must be integers.");
-        return null;
-      }
-      if (targetWidth <= 0 || targetHeight <= 0) {
-        displayError("Width and height must be positive values.");
-        return false;
-      }
-      if (targetWidth > currentWidth || targetHeight > currentHeight) {
-        displayError("Target dimensions must be less than or equal to current dimensions.");
-        return false;
-      }
-  
-      this.targetWidth = targetWidth;
-      this.targetHeight = targetHeight;
-      return true;
-    }
-  }
+
   
   export class Errors {
     /**
