@@ -2,7 +2,7 @@
   <div id="app">
     <h1>Image Resizer</h1>
     <input type="file" @change="onFileChange" accept="image/*" :disabled="appState.isDownloading"><br>
-    <div v-if="imageData.currentImageSrc">
+    <div v-if="imageData.currentImageSrc && appState.currentDimensionsVisible">
       <p>Current Dimensions: <span>{{ imageData.currentWidth }}</span> x <span>{{ imageData.currentHeight }}</span></p>
       <p>Current Size: <span>{{ (imageData.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
     </div>
@@ -16,13 +16,13 @@
       <label>
         <input type="checkbox" v-model="appState.keepAspectRatio"> Keep Aspect Ratio
       </label><br>
-      <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors">Submit</button><br>
-      <button @click="resetForm" :disabled="appState.isDownloading">Go Back</button>
+      <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors || appState.buttonsDisabled" :class="{ blurred: appState.buttonsDisabled }">Submit</button><br>
+      <button @click="resetForm" :disabled="appState.isDownloading || appState.buttonsDisabled" :class="{ blurred: appState.buttonsDisabled }">Go Back</button>
     </div>
     <div v-else>
-      <button @click="appState.showResizeFields = true" :disabled="appState.isDownloading">Resize Image</button><br>
+      <button @click="appState.showResizeFields = true" :disabled="appState.isDownloading || appState.buttonsDisabled" :class="{ blurred: appState.buttonsDisabled }">Resize Image</button><br>
       <label for="sizeOptions">Reduce Image Size:</label>
-      <select v-model="selectedSize" @change="submitReduceToSelectedSize" :disabled="appState.isDownloading">
+      <select v-model="selectedSize" @change="submitReduceToSelectedSize" :disabled="appState.isDownloading || appState.buttonsDisabled" :class="{ blurred: appState.buttonsDisabled }">
         <option value="" disabled>Select a size</option>
         <option value="512000">500 KB</option>
         <option value="1048576">1 MB</option>
@@ -38,9 +38,7 @@
 
 
 
-
 <script>
-
 import { imageData, Errors, AppState } from './models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
 
@@ -76,6 +74,7 @@ export default {
           this.imageData.currentImageSrc = e.target.result;
           this.imageData.currentFileSize = file.size;
           this.appState.currentDimensionsVisible = true;
+          this.appState.buttonsDisabled = false;
         };
         img.onerror = () => {
           this.displayError("Invalid image file.");
@@ -123,6 +122,7 @@ export default {
           canvas = document.createElement('canvas');
           const resizedImageURL = resizeImage(img, this.imageData.targetWidth, this.imageData.targetHeight);
           this.downloadImage(resizedImageURL, 'resized-image.jpg');
+          this.appState.currentDimensionsVisible = false; // Hide current dimensions and size when resizing
         } catch (error) {
           this.displayError(error.message);
         }
@@ -168,16 +168,16 @@ export default {
       this.imageData.targetWidth = null;
       this.imageData.targetHeight = null;
       this.appState.errorMessage = '';
+      this.appState.currentDimensionsVisible = true; // Show current dimensions and size when going back
+      this.appState.buttonsDisabled = false;
     },
     displayError(message) {
       this.appState.errorMessage = message;
+      this.appState.buttonsDisabled = true; // Disable buttons when there's an error
     },
   },
 };
 </script>
-
-
-
 
 
 <style>
@@ -240,6 +240,10 @@ button:hover {
 button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+}
+
+button.blurred {
+  filter: blur(2px);
 }
 
 select {
