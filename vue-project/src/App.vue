@@ -16,13 +16,13 @@
       <label>
         <input type="checkbox" v-model="appState.keepAspectRatio"> Keep Aspect Ratio
       </label><br>
-      <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors || appState.buttonsDisabled" :class="{ blurred: appState.buttonsDisabled }">Submit</button><br>
-      <button @click="resetForm" :disabled="appState.isDownloading || appState.buttonsDisabled" :class="{ blurred: appState.buttonsDisabled }">Go Back</button>
+      <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Submit</button><br>
+      <button @click="resetForm" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Go Back</button>
     </div>
     <div v-else>
-      <button @click="appState.showResizeFields = true" :disabled="appState.isDownloading || appState.buttonsDisabled" :class="{ blurred: appState.buttonsDisabled }">Resize Image</button><br>
+      <button @click="showResizeFields" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Resize Image</button><br>
       <label for="sizeOptions">Reduce Image Size:</label>
-      <select v-model="selectedSize" @change="submitReduceToSelectedSize" :disabled="appState.isDownloading || appState.buttonsDisabled" :class="{ blurred: appState.buttonsDisabled }">
+      <select v-model="selectedSize" @change="submitReduceToSelectedSize" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">
         <option value="" disabled>Select a size</option>
         <option value="512000">500 KB</option>
         <option value="1048576">1 MB</option>
@@ -35,6 +35,7 @@
     <p v-if="appState.errorMessage" class="error">{{ appState.errorMessage }}</p>
   </div>
 </template>
+
 
 
 
@@ -56,6 +57,9 @@ export default {
   computed: {
     hasValidationErrors() {
       return this.errors.width !== '' || this.errors.height !== '';
+    },
+    isImageLoaded() {
+      return !!this.imageData.currentImageSrc;
     }
   },
   methods: {
@@ -162,6 +166,10 @@ export default {
       setTimeout(() => {
         this.appState.isDownloading = false;
       }, 2000);
+    },
+    showResizeFields() {
+      this.appState.showResizeFields = true;
+      this.appState.currentDimensionsVisible = true; // Hide current size when showing resize fields
     },
     resetForm() {
       this.appState.showResizeFields = false;
