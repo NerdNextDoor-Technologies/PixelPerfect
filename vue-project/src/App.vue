@@ -8,10 +8,10 @@
     </div>
     <div v-if="appState.showResizeFields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageData.targetWidth" class="input-width" placeholder="Enter target width" @input="onDimensionInput('width')"><br>
+      <input type="number" v-model="imageData.targetWidth" class="input-width" placeholder="Enter target width" @input="keepAspectRatio('width')"><br>
       <p v-if="errors.width" class="error">{{ errors.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageData.targetHeight" class="input-height" placeholder="Enter target height" @input="onDimensionInput('height')"><br>
+      <input type="number" v-model="imageData.targetHeight" class="input-height" placeholder="Enter target height" @input="keepAspectRatio('height')"><br>
       <p v-if="errors.height" class="error">{{ errors.height }}</p>
       <label>
         <input type="checkbox" v-model="appState.keepAspectRatio"> Keep Aspect Ratio
@@ -22,7 +22,7 @@
     <div v-else>
       <button @click="showResizeFields" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Resize Image</button><br>
       <label for="sizeOptions">Reduce Image Size:</label>
-      <select v-model="selectedSize" @change="submitReduceToSelectedSize" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">
+      <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">
         <option value="" disabled>Select a size</option>
         <option value="512000">500 KB</option>
         <option value="1048576">1 MB</option>
@@ -100,7 +100,7 @@ export default {
         this.errors.height = "The product of width and height must not exceed 25,600,000.";
       }
     },
-    onDimensionInput(dimension) {
+    keepAspectRatio(dimension) {
       if (!this.appState.keepAspectRatio || !this.imageData.currentWidth || !this.imageData.currentHeight) return;
 
       if (dimension === 'width') {
@@ -132,7 +132,7 @@ export default {
         }
       };
     },
-    submitReduceToSelectedSize() {
+    reduceSizeImage() {
       if (!this.selectedSize) {
         this.displayError("Please select a size.");
         return;
