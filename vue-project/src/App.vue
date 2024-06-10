@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { imageData, Errors, AppState } from './models/image/ImageModel.js';
+import { ImageData, Errors, AppState } from './models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
 
 let canvas;
@@ -45,7 +45,7 @@ let canvas;
 export default {
   data() {
     return {
-      imageData: new imageData(),
+      imageData: new ImageData(),
       errors: new Errors(),
       appState: new AppState(),
       selectedSize: ''
