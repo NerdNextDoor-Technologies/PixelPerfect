@@ -2,25 +2,33 @@
   <div id="app">
     <h1>Image Resizer</h1>
     <input type="file" @change="onFileChange" accept="image/*" :disabled="appState.isDownloading"><br>
-    <div v-if="imageData.currentDimensionsVisible">
+    <div v-if="imageData.currentImageSrc && appState.currentDimensionsVisible">
       <p>Current Dimensions: <span>{{ imageData.currentWidth }}</span> x <span>{{ imageData.currentHeight }}</span></p>
+      <p>Current Size: <span>{{ (imageData.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
     </div>
     <div v-if="appState.showResizeFields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageData.targetWidth" class="input-width" placeholder="Enter target width" @input="onDimensionInput('width')"><br>
+      <input type="number" v-model="imageData.targetWidth" class="input-width" placeholder="Enter target width" @input="keepAspectRatio('width')"><br>
       <p v-if="errors.width" class="error">{{ errors.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageData.targetHeight" class="input-height" placeholder="Enter target height" @input="onDimensionInput('height')"><br>
+      <input type="number" v-model="imageData.targetHeight" class="input-height" placeholder="Enter target height" @input="keepAspectRatio('height')"><br>
       <p v-if="errors.height" class="error">{{ errors.height }}</p>
       <label>
         <input type="checkbox" v-model="appState.keepAspectRatio"> Keep Aspect Ratio
       </label><br>
-      <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors">Submit</button><br>
-      <button @click="resetForm" :disabled="appState.isDownloading">Go Back</button>
+      <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Submit</button><br>
+      <button @click="resetForm" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Go Back</button>
     </div>
     <div v-else>
-      <button @click="appState.showResizeFields = true" :disabled="appState.isDownloading">Resize Image</button><br>
-      <button @click="submitReduceTo1MB" :disabled="appState.isDownloading">Reduce Image Size to 1MB</button><br>
+      <button @click="showResizeFields" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Resize Image</button><br>
+      <label for="sizeOptions">Reduce Image Size:</label>
+      <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">
+        <option value="" disabled>Select a size</option>
+        <option value="512000">500 KB</option>
+        <option value="1048576">1 MB</option>
+        <option value="2097152">2 MB</option>
+        <option value="3145728">3 MB</option>
+      </select><br>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
     <p v-if="appState.isDownloading" class="downloading-message">Downloading... please wait</p>
@@ -28,14 +36,9 @@
   </div>
 </template>
 
-
-
-
 <script>
-
 import { imageData, Errors, AppState } from './models/image/ImageModel.js';
-
-import { resizeImage, reduceImageTo1MB } from './helpers/ImageHelper.js';
+import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
 
 let canvas;
 
@@ -45,11 +48,15 @@ export default {
       imageData: new imageData(),
       errors: new Errors(),
       appState: new AppState(),
+      selectedSize: ''
     };
   },
   computed: {
     hasValidationErrors() {
       return this.errors.width !== '' || this.errors.height !== '';
+    },
+    isImageLoaded() {
+      return !!this.imageData.currentImageSrc;
     }
   },
   methods: {
@@ -59,8 +66,11 @@ export default {
         this.displayError("No file selected.");
         return;
       }
-      this.imageData = new imageData(file);
-      this.appState.currentDimensionsVisible = true;
+      this.imageData.loadImage(file, this.displayError.bind(this), this.updateState.bind(this));
+    },
+    updateState(currentDimensionsVisible, buttonsDisabled) {
+      this.appState.currentDimensionsVisible = currentDimensionsVisible;
+      this.appState.buttonsDisabled = buttonsDisabled;
     },
     validateImageDimensions() {
       const width = this.imageData.targetWidth;
@@ -72,7 +82,7 @@ export default {
         this.errors.height = "The product of width and height must not exceed 25,600,000.";
       }
     },
-    onDimensionInput(dimension) {
+    keepAspectRatio(dimension) {
       if (!this.appState.keepAspectRatio || !this.imageData.currentWidth || !this.imageData.currentHeight) return;
 
       if (dimension === 'width') {
@@ -98,12 +108,17 @@ export default {
           canvas = document.createElement('canvas');
           const resizedImageURL = resizeImage(img, this.imageData.targetWidth, this.imageData.targetHeight);
           this.downloadImage(resizedImageURL, 'resized-image.jpg');
+          this.appState.currentDimensionsVisible = false; // Hide current dimensions and size when resizing
         } catch (error) {
           this.displayError(error.message);
         }
       };
     },
-    submitReduceTo1MB() {
+    reduceSizeImage() {
+      if (!this.selectedSize) {
+        this.displayError("Please select a size.");
+        return;
+      }
       const img = new Image();
       img.src = this.imageData.currentImageSrc;
       img.onload = () => {
@@ -115,8 +130,8 @@ export default {
 
         try {
           canvas = document.createElement('canvas');
-          const reducedImageURL = reduceImageTo1MB(img);
-          this.downloadImage(reducedImageURL, 'reduced-size-image.jpg');
+          const reducedImageURL = reduceImageToSize(img, parseInt(this.selectedSize));
+          this.downloadImage(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
           this.displayError(error.message);
         }
@@ -134,20 +149,25 @@ export default {
         this.appState.isDownloading = false;
       }, 2000);
     },
+    showResizeFields() {
+      this.appState.showResizeFields = true;
+      this.appState.currentDimensionsVisible = true; // Hide current size when showing resize fields
+    },
     resetForm() {
       this.appState.showResizeFields = false;
       this.imageData.targetWidth = null;
       this.imageData.targetHeight = null;
       this.appState.errorMessage = '';
+      this.appState.currentDimensionsVisible = true; // Show current dimensions and size when going back
+      this.appState.buttonsDisabled = false;
     },
     displayError(message) {
       this.appState.errorMessage = message;
+      this.appState.buttonsDisabled = true; // Disable buttons when there's an error
     },
   },
 };
-
 </script>
-
 
 <style>
 body {
@@ -211,6 +231,16 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button.blurred {
+  filter: blur(2px);
+}
+
+select {
+  margin-top: 10px;
+  padding: 5px;
+  width: 215px;
+}
+
 .downloading-message {
   color: green;
   margin-top: 10px;
@@ -225,4 +255,3 @@ label input[type="checkbox"] {
   margin-left: 5px;
 }
 </style>
-
