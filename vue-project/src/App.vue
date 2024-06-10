@@ -7,11 +7,14 @@
     </div>
     <div v-if="appState.showResizeFields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageData.targetWidth" class="input-width" placeholder="Enter target width" @input="validateImageDimensions"><br>
+      <input type="number" v-model="imageData.targetWidth" class="input-width" placeholder="Enter target width" @input="onDimensionInput('width')"><br>
       <p v-if="errors.width" class="error">{{ errors.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageData.targetHeight" class="input-height" placeholder="Enter target height" @input="validateImageDimensions"><br>
+      <input type="number" v-model="imageData.targetHeight" class="input-height" placeholder="Enter target height" @input="onDimensionInput('height')"><br>
       <p v-if="errors.height" class="error">{{ errors.height }}</p>
+      <label>
+        <input type="checkbox" v-model="appState.keepAspectRatio"> Keep Aspect Ratio
+      </label><br>
       <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors">Submit</button><br>
       <button @click="resetForm" :disabled="appState.isDownloading">Go Back</button>
     </div>
@@ -27,12 +30,12 @@
 
 
 
+
 <script>
 
 import { imageData, Errors, AppState } from './models/image/ImageModel.js';
 
 import { resizeImage, reduceImageTo1MB } from './helpers/ImageHelper.js';
-
 
 let canvas;
 
@@ -69,6 +72,18 @@ export default {
         this.errors.height = "The product of width and height must not exceed 25,600,000.";
       }
     },
+    onDimensionInput(dimension) {
+      if (!this.appState.keepAspectRatio || !this.imageData.currentWidth || !this.imageData.currentHeight) return;
+
+      if (dimension === 'width') {
+        const aspectRatio = this.imageData.currentHeight / this.imageData.currentWidth;
+        this.imageData.targetHeight = Math.round(this.imageData.targetWidth * aspectRatio);
+      } else if (dimension === 'height') {
+        const aspectRatio = this.imageData.currentWidth / this.imageData.currentHeight;
+        this.imageData.targetWidth = Math.round(this.imageData.targetHeight * aspectRatio);
+      }
+      this.validateImageDimensions();
+    },
     resizeImage() {
       const img = new Image();
       img.src = this.imageData.currentImageSrc;
@@ -79,7 +94,6 @@ export default {
         this.imageData.validateResolution(targetWidth, targetHeight, this.displayError.bind(this));
         if (!this.imageData.isValid) return;
 
-
         try {
           canvas = document.createElement('canvas');
           const resizedImageURL = resizeImage(img, this.imageData.targetWidth, this.imageData.targetHeight);
@@ -89,7 +103,6 @@ export default {
         }
       };
     },
-
     submitReduceTo1MB() {
       const img = new Image();
       img.src = this.imageData.currentImageSrc;
@@ -134,6 +147,7 @@ export default {
 };
 
 </script>
+
 
 <style>
 body {
@@ -206,4 +220,9 @@ button:disabled {
   color: red;
   margin-top: 10px;
 }
+
+label input[type="checkbox"] {
+  margin-left: 5px;
+}
 </style>
+
