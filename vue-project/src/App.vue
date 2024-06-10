@@ -4,8 +4,6 @@
     <input type="file" @change="onFileChange" accept="image/*" :disabled="appState.isDownloading"><br>
     <div v-if="imageData.currentDimensionsVisible">
       <p>Current Dimensions: <span>{{ imageData.currentWidth }}</span> x <span>{{ imageData.currentHeight }}</span></p>
-    <div v-if="imageData.currentDimensionsVisible">
-      <p>Current Dimensions: <span>{{ imageData.currentWidth }}</span> x <span>{{ imageData.currentHeight }}</span></p>
     </div>
     <div v-if="appState.showResizeFields">
       <label for="targetWidth">Width:</label>
@@ -54,11 +52,6 @@ export default {
       return this.errors.width !== '' || this.errors.height !== '';
     }
   },
-  computed: {
-    hasValidationErrors() {
-      return this.errors.width !== '' || this.errors.height !== '';
-    }
-  },
   methods: {
     onFileChange(event) {
       const file = event.target.files[0];
@@ -66,12 +59,6 @@ export default {
         this.displayError("No file selected.");
         return;
       }
-      this.imageData = new imageData(file);
-      this.appState.currentDimensionsVisible = true;
-    },
-    validateImageDimensions() {
-      const width = this.imageData.targetWidth;
-      const height = this.imageData.targetHeight;
       this.imageData = new imageData(file);
       this.appState.currentDimensionsVisible = true;
     },
@@ -116,7 +103,6 @@ export default {
         }
       };
     },
-
     submitReduceTo1MB() {
       const img = new Image();
       img.src = this.imageData.currentImageSrc;
