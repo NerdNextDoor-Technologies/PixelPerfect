@@ -39,6 +39,8 @@
 <script>
 import { ImageData, Errors, AppState } from './models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
+import './assets/AppStyles.css';
+import { MAX_IMAGE_DIMENSIONS } from './assets/constants.js';
 
 let canvas;
 
@@ -77,7 +79,7 @@ export default {
       const height = this.imageModelInstance.targetHeight;
       this.errorMessages.width = width <= 0 ? "Width must be greater than 0." : '';
       this.errorMessages.height = height <= 0 ? "Height must be greater than 0." : '';
-      if (width * height > 25600000) {
+      if (width * height > MAX_IMAGE_DIMENSIONS) {
         this.errorMessages.width = "The product of width and height must not exceed 25,600,000.";
         this.errorMessages.height = "The product of width and height must not exceed 25,600,000.";
       }
@@ -169,89 +171,5 @@ export default {
 };
 </script>
 
-<style>
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-}
+<style src="./assets/AppStyles.css"></style>
 
-#app {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  border: 1px solid #ccc;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-}
-
-h1 {
-  margin-bottom: 20px;
-}
-
-label {
-  margin-top: 10px;
-}
-
-.input-width {
-  margin-left: 5px;
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 200px;
-}
-
-.input-height {
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 200px;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-button.blurred {
-  filter: blur(2px);
-}
-
-select {
-  margin-top: 10px;
-  padding: 5px;
-  width: 215px;
-}
-
-.downloading-message {
-  color: green;
-  margin-top: 10px;
-}
-
-.error {
-  color: red;
-  margin-top: 10px;
-}
-
-label input[type="checkbox"] {
-  margin-left: 5px;
-}
-</style>
