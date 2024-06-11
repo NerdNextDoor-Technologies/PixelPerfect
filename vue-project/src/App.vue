@@ -8,10 +8,10 @@
     </div>
     <div v-if="appStateInstance.showResizeFields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="keepAspectRatio('width')"><br>
+      <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')"><br>
       <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="keepAspectRatio('height')"><br>
+      <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')"><br>
       <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
       <label>
         <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
@@ -39,8 +39,8 @@
 <script>
 import { ImageData, Errors, AppState } from './models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
-import './assets/AppStyles.css';
-import { MAX_IMAGE_DIMENSIONS } from './assets/constants.js';
+import './assets/styles/ImageStyles.css';
+import { MAX_IMAGE_DIMENSIONS } from './assets/constants/constants.js';
 
 let canvas;
 
@@ -50,7 +50,8 @@ export default {
       imageModelInstance: new ImageData(),
       errorMessages: new Errors(),
       appStateInstance: new AppState(),
-      selectedSize: ''
+      selectedSize: '',
+      lastModifiedDimension: '' // New data property to track the last modified dimension
     };
   },
   computed: {
@@ -94,6 +95,12 @@ export default {
         const aspectRatio = this.imageModelInstance.currentWidth / this.imageModelInstance.currentHeight;
         this.imageModelInstance.targetWidth = Math.round(this.imageModelInstance.targetHeight * aspectRatio);
       }
+    },
+    updateDimensions(dimension) {
+      this.lastModifiedDimension = dimension; // Track the last modified dimension
+      if (this.appStateInstance.keepAspectRatio) {
+        this.keepAspectRatio(dimension);
+      }
       this.validateTargetDimensions();
     },
     resizeImage() {
@@ -102,7 +109,7 @@ export default {
       img.onload = () => {
         const targetWidth = this.imageModelInstance.targetWidth || img.width;
         const targetHeight = this.imageModelInstance.targetHeight || (img.height / img.width) * targetWidth;
-        
+
         this.imageModelInstance.validateResolution(targetWidth, targetHeight, this.displayErrorMessage.bind(this));
         if (!this.imageModelInstance.isValid) return;
 
@@ -171,5 +178,4 @@ export default {
 };
 </script>
 
-<style src="./assets/AppStyles.css"></style>
-
+<style src="./assets/styles/ImageStyles.css"></style>
