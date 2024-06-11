@@ -39,8 +39,8 @@
 <script>
 import { ImageData, Errors, AppState } from './models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
-import './assets/AppStyles.css';
-import { MAX_IMAGE_DIMENSIONS } from './assets/constants.js';
+import './assets/styles/AppStyles.css';
+import { MAX_IMAGE_DIMENSIONS } from './assets/constants/constants.js';
 
 let canvas;
 
@@ -171,5 +171,5 @@ export default {
 };
 </script>
 
-<style src="./assets/AppStyles.css"></style>
+<style src="./assets/styles/AppStyles.css"></style>
 
