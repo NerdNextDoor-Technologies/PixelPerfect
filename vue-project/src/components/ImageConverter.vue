@@ -1,38 +1,41 @@
 <template>
-  <div id="image-converter">
-    <h1>Image Resizer</h1>
-    <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading"><br>
-    <div v-if="imageModelInstance.currentImageSrc && appStateInstance.currentDimensionsVisible">
-      <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
-      <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
+  <div id="image-converter-container">
+    <div id="image-converter">
+      <h1>Image Resizer</h1>
+      <button @click="goBack" class="back-button">Go Back</button>
+      <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading"><br>
+      <div v-if="imageModelInstance.currentImageSrc && appStateInstance.currentDimensionsVisible">
+        <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
+        <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
+      </div>
+      <div v-if="appStateInstance.showResizeFields">
+        <label for="targetWidth">Width:</label>
+        <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')"><br>
+        <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
+        <label for="targetHeight">Height:</label>
+        <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')"><br>
+        <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
+        <label>
+          <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
+        </label><br>
+        <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button><br>
+        <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Reset</button>
+      </div>
+      <div v-else>
+        <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button><br>
+        <label for="sizeOptions">Reduce Image Size:</label>
+        <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">
+          <option value="" disabled>Select a size</option>
+          <option value="512000">500 KB</option>
+          <option value="1048576">1 MB</option>
+          <option value="2097152">2 MB</option>
+          <option value="3145728">3 MB</option>
+        </select><br>
+      </div>
+      <canvas ref="canvas" style="display:none;"></canvas>
+      <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
+      <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
     </div>
-    <div v-if="appStateInstance.showResizeFields">
-      <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')"><br>
-      <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
-      <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')"><br>
-      <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
-      <label>
-        <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
-      </label><br>
-      <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button><br>
-      <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
-    </div>
-    <div v-else>
-      <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button><br>
-      <label for="sizeOptions">Reduce Image Size:</label>
-      <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">
-        <option value="" disabled>Select a size</option>
-        <option value="512000">500 KB</option>
-        <option value="1048576">1 MB</option>
-        <option value="2097152">2 MB</option>
-        <option value="3145728">3 MB</option>
-      </select><br>
-    </div>
-    <canvas ref="canvas" style="display:none;"></canvas>
-    <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
-    <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
   </div>
 </template>
 
@@ -42,9 +45,10 @@ import { resizeImage, reduceImageToSize } from '../helpers/ImageHelper.js';
 import '../assets/styles/ImageStyles.css';
 import { MAX_IMAGE_DIMENSIONS } from '../assets/constants/constants.js';
 
-let canvas;
-
 export default {
+  props: {
+    goBackToHome: Function // New prop to accept the goBack function from the parent
+  },
   data() {
     return {
       imageModelInstance: new ImageData(),
@@ -114,7 +118,6 @@ export default {
         if (!this.imageModelInstance.isValid) return;
 
         try {
-          canvas = document.createElement('canvas');
           const resizedImageURL = resizeImage(img, this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false; // Hide current dimensions and size when resizing
@@ -138,7 +141,6 @@ export default {
         if (!this.imageModelInstance.isValid) return;
 
         try {
-          canvas = document.createElement('canvas');
           const reducedImageURL = reduceImageToSize(img, parseInt(this.selectedSize));
           this.createDownloadLinkAndTriggerDownload(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
@@ -174,8 +176,48 @@ export default {
       this.appStateInstance.errorMessage = message;
       this.appStateInstance.buttonsDisabled = true; // Disable buttons when there's an error
     },
+    goBack() {
+      this.goBackToHome();
+    }
   },
 };
 </script>
 
-<style src="../assets/styles/ImageStyles.css"></style>
+<style scoped>
+#image-converter-container {
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: 20px auto;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#image-converter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+button {
+  margin-top: 20px;
+}
+
+input[type="file"] {
+  margin-top: 10px;
+}
+
+.downloading-message {
+  color: red;
+}
+
+.error {
+  color: red;
+}
+
+.blurred {
+  opacity: 0.5;
+  pointer-events: none;
+}
+</style>

@@ -1,3 +1,4 @@
+<!-- App.vue -->
 <template>
   <div id="app">
     <header>
@@ -10,7 +11,7 @@
         <!-- Additional file type options can be added here -->
       </div>
       <div v-else>
-        <ImageConverter v-if="selectedFileType === 'image'" />
+        <ImageConverter v-if="selectedFileType === 'image'" :goBackToHome="resetFileType" />
         <!-- Additional file type components can be added here -->
       </div>
     </main>
@@ -34,6 +35,9 @@ export default {
   methods: {
     selectFileType(fileType) {
       this.selectedFileType = fileType;
+    },
+    resetFileType() {
+      this.selectedFileType = '';
     },
   },
 };
