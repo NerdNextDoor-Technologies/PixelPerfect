@@ -1,28 +1,28 @@
 <template>
   <div id="app">
     <h1>Image Resizer</h1>
-    <input type="file" @change="onFileChange" accept="image/*" :disabled="appState.isDownloading"><br>
-    <div v-if="imageData.currentImageSrc && appState.currentDimensionsVisible">
-      <p>Current Dimensions: <span>{{ imageData.currentWidth }}</span> x <span>{{ imageData.currentHeight }}</span></p>
-      <p>Current Size: <span>{{ (imageData.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
+    <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading"><br>
+    <div v-if="imageModelInstance.currentImageSrc && appStateInstance.currentDimensionsVisible">
+      <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
+      <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
     </div>
-    <div v-if="appState.showResizeFields">
+    <div v-if="appStateInstance.showResizeFields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageData.targetWidth" class="input-width" placeholder="Enter target width" @input="keepAspectRatio('width')"><br>
-      <p v-if="errors.width" class="error">{{ errors.width }}</p>
+      <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="keepAspectRatio('width')"><br>
+      <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageData.targetHeight" class="input-height" placeholder="Enter target height" @input="keepAspectRatio('height')"><br>
-      <p v-if="errors.height" class="error">{{ errors.height }}</p>
+      <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="keepAspectRatio('height')"><br>
+      <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
       <label>
-        <input type="checkbox" v-model="appState.keepAspectRatio"> Keep Aspect Ratio
+        <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
       </label><br>
-      <button @click="resizeImage" :disabled="appState.isDownloading || hasValidationErrors || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Submit</button><br>
-      <button @click="resetForm" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Go Back</button>
+      <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button><br>
+      <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
     </div>
     <div v-else>
-      <button @click="showResizeFields" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">Resize Image</button><br>
+      <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button><br>
       <label for="sizeOptions">Reduce Image Size:</label>
-      <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appState.isDownloading || appState.buttonsDisabled || !isImageLoaded" :class="{ blurred: appState.buttonsDisabled }">
+      <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">
         <option value="" disabled>Select a size</option>
         <option value="512000">500 KB</option>
         <option value="1048576">1 MB</option>
@@ -31,114 +31,116 @@
       </select><br>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
-    <p v-if="appState.isDownloading" class="downloading-message">Downloading... please wait</p>
-    <p v-if="appState.errorMessage" class="error">{{ appState.errorMessage }}</p>
+    <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
+    <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
   </div>
 </template>
 
 <script>
 import { ImageData, Errors, AppState } from './models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
+import './assets/AppStyles.css';
+import { MAX_IMAGE_DIMENSIONS } from './assets/constants.js';
 
 let canvas;
 
 export default {
   data() {
     return {
-      imageData: new ImageData(),
-      errors: new Errors(),
-      appState: new AppState(),
+      imageModelInstance: new ImageData(),
+      errorMessages: new Errors(),
+      appStateInstance: new AppState(),
       selectedSize: ''
     };
   },
   computed: {
     hasValidationErrors() {
-      return this.errors.width !== '' || this.errors.height !== '';
+      return this.errorMessages.width !== '' || this.errorMessages.height !== '';
     },
     isImageLoaded() {
-      return !!this.imageData.currentImageSrc;
+      return !!this.imageModelInstance.currentImageSrc;
     }
   },
   methods: {
-    onFileChange(event) {
+    handleFileSelection(event) {
       const file = event.target.files[0];
       if (!file) {
-        this.displayError("No file selected.");
+        this.displayErrorMessage("No file selected.");
         return;
       }
-      this.imageData.loadImage(file, this.displayError.bind(this), this.updateState.bind(this));
+      this.imageModelInstance.loadImage(file, this.displayErrorMessage.bind(this), this.updateState.bind(this));
     },
     updateState(currentDimensionsVisible, buttonsDisabled) {
-      this.appState.currentDimensionsVisible = currentDimensionsVisible;
-      this.appState.buttonsDisabled = buttonsDisabled;
+      this.appStateInstance.currentDimensionsVisible = currentDimensionsVisible;
+      this.appStateInstance.buttonsDisabled = buttonsDisabled;
     },
-    validateImageDimensions() {
-      const width = this.imageData.targetWidth;
-      const height = this.imageData.targetHeight;
-      this.errors.width = width <= 0 ? "Width must be greater than 0." : '';
-      this.errors.height = height <= 0 ? "Height must be greater than 0." : '';
-      if (width * height > 25600000) {
-        this.errors.width = "The product of width and height must not exceed 25,600,000.";
-        this.errors.height = "The product of width and height must not exceed 25,600,000.";
+    validateTargetDimensions() {
+      const width = this.imageModelInstance.targetWidth;
+      const height = this.imageModelInstance.targetHeight;
+      this.errorMessages.width = width <= 0 ? "Width must be greater than 0." : '';
+      this.errorMessages.height = height <= 0 ? "Height must be greater than 0." : '';
+      if (width * height > MAX_IMAGE_DIMENSIONS) {
+        this.errorMessages.width = "The product of width and height must not exceed 25,600,000.";
+        this.errorMessages.height = "The product of width and height must not exceed 25,600,000.";
       }
     },
     keepAspectRatio(dimension) {
-      if (!this.appState.keepAspectRatio || !this.imageData.currentWidth || !this.imageData.currentHeight) return;
+      if (!this.appStateInstance.keepAspectRatio || !this.imageModelInstance.currentWidth || !this.imageModelInstance.currentHeight) return;
 
       if (dimension === 'width') {
-        const aspectRatio = this.imageData.currentHeight / this.imageData.currentWidth;
-        this.imageData.targetHeight = Math.round(this.imageData.targetWidth * aspectRatio);
+        const aspectRatio = this.imageModelInstance.currentHeight / this.imageModelInstance.currentWidth;
+        this.imageModelInstance.targetHeight = Math.round(this.imageModelInstance.targetWidth * aspectRatio);
       } else if (dimension === 'height') {
-        const aspectRatio = this.imageData.currentWidth / this.imageData.currentHeight;
-        this.imageData.targetWidth = Math.round(this.imageData.targetHeight * aspectRatio);
+        const aspectRatio = this.imageModelInstance.currentWidth / this.imageModelInstance.currentHeight;
+        this.imageModelInstance.targetWidth = Math.round(this.imageModelInstance.targetHeight * aspectRatio);
       }
-      this.validateImageDimensions();
+      this.validateTargetDimensions();
     },
     resizeImage() {
       const img = new Image();
-      img.src = this.imageData.currentImageSrc;
+      img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
-        const targetWidth = this.imageData.targetWidth || img.width;
-        const targetHeight = this.imageData.targetHeight || (img.height / img.width) * targetWidth;
+        const targetWidth = this.imageModelInstance.targetWidth || img.width;
+        const targetHeight = this.imageModelInstance.targetHeight || (img.height / img.width) * targetWidth;
         
-        this.imageData.validateResolution(targetWidth, targetHeight, this.displayError.bind(this));
-        if (!this.imageData.isValid) return;
+        this.imageModelInstance.validateResolution(targetWidth, targetHeight, this.displayErrorMessage.bind(this));
+        if (!this.imageModelInstance.isValid) return;
 
         try {
           canvas = document.createElement('canvas');
-          const resizedImageURL = resizeImage(img, this.imageData.targetWidth, this.imageData.targetHeight);
-          this.downloadImage(resizedImageURL, 'resized-image.jpg');
-          this.appState.currentDimensionsVisible = false; // Hide current dimensions and size when resizing
+          const resizedImageURL = resizeImage(img, this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
+          this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
+          this.appStateInstance.currentDimensionsVisible = false; // Hide current dimensions and size when resizing
         } catch (error) {
-          this.displayError(error.message);
+          this.displayErrorMessage(error.message);
         }
       };
     },
     reduceSizeImage() {
       if (!this.selectedSize) {
-        this.displayError("Please select a size.");
+        this.displayErrorMessage("Please select a size.");
         return;
       }
       const img = new Image();
-      img.src = this.imageData.currentImageSrc;
+      img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
         const targetWidth = img.width;
         const targetHeight = img.height;
 
-        this.imageData.validateResolution(targetWidth, targetHeight, this.displayError.bind(this));
-        if (!this.imageData.isValid) return;
+        this.imageModelInstance.validateResolution(targetWidth, targetHeight, this.displayErrorMessage.bind(this));
+        if (!this.imageModelInstance.isValid) return;
 
         try {
           canvas = document.createElement('canvas');
           const reducedImageURL = reduceImageToSize(img, parseInt(this.selectedSize));
-          this.downloadImage(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
+          this.createDownloadLinkAndTriggerDownload(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
-          this.displayError(error.message);
+          this.displayErrorMessage(error.message);
         }
       };
     },
-    downloadImage(dataURL, fileName) {
-      this.appState.isDownloading = true;
+    createDownloadLinkAndTriggerDownload(dataURL, fileName) {
+      this.appStateInstance.isDownloading = true;
       const link = document.createElement('a');
       link.href = dataURL;
       link.download = fileName;
@@ -146,112 +148,28 @@ export default {
       link.click();
       document.body.removeChild(link);
       setTimeout(() => {
-        this.appState.isDownloading = false;
+        this.appStateInstance.isDownloading = false;
       }, 2000);
     },
     showResizeFields() {
-      this.appState.showResizeFields = true;
-      this.appState.currentDimensionsVisible = true; // Hide current size when showing resize fields
+      this.appStateInstance.showResizeFields = true;
+      this.appStateInstance.currentDimensionsVisible = true; // Hide current size when showing resize fields
     },
-    resetForm() {
-      this.appState.showResizeFields = false;
-      this.imageData.targetWidth = null;
-      this.imageData.targetHeight = null;
-      this.appState.errorMessage = '';
-      this.appState.currentDimensionsVisible = true; // Show current dimensions and size when going back
-      this.appState.buttonsDisabled = false;
+    resetImageForm() {
+      this.appStateInstance.showResizeFields = false;
+      this.imageModelInstance.targetWidth = null;
+      this.imageModelInstance.targetHeight = null;
+      this.appStateInstance.errorMessage = '';
+      this.appStateInstance.currentDimensionsVisible = true; // Show current dimensions and size when going back
+      this.appStateInstance.buttonsDisabled = false;
     },
-    displayError(message) {
-      this.appState.errorMessage = message;
-      this.appState.buttonsDisabled = true; // Disable buttons when there's an error
+    displayErrorMessage(message) {
+      this.appStateInstance.errorMessage = message;
+      this.appStateInstance.buttonsDisabled = true; // Disable buttons when there's an error
     },
   },
 };
 </script>
 
-<style>
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-}
+<style src="./assets/AppStyles.css"></style>
 
-#app {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  border: 1px solid #ccc;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-}
-
-h1 {
-  margin-bottom: 20px;
-}
-
-label {
-  margin-top: 10px;
-}
-
-.input-width {
-  margin-left: 5px;
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 200px;
-}
-
-.input-height {
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 200px;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-button.blurred {
-  filter: blur(2px);
-}
-
-select {
-  margin-top: 10px;
-  padding: 5px;
-  width: 215px;
-}
-
-.downloading-message {
-  color: green;
-  margin-top: 10px;
-}
-
-.error {
-  color: red;
-  margin-top: 10px;
-}
-
-label input[type="checkbox"] {
-  margin-left: 5px;
-}
-</style>
