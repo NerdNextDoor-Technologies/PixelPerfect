@@ -4,7 +4,7 @@ import pluginVue from "eslint-plugin-vue";
 
 
 export default [
-  {languageOptions: { globals: {...globals.browser, ...globals.node} }},
+  {languageOptions: { globals: globals.browser }},
   pluginJs.configs.recommended,
   ...pluginVue.configs["flat/essential"],
 ];
