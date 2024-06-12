@@ -179,6 +179,3 @@ export default {
 </script>
 
 <style src="./assets/styles/ImageStyles.css"></style>
-
-
-//checking eslint
