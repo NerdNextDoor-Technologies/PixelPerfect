@@ -1,5 +1,3 @@
-// models/pdf/PdfModel.js
-
 export class PdfData {
   /**
    * @type {string}
@@ -24,7 +22,14 @@ export class PdfData {
     this.currentFileSize = file.size;
     const reader = new FileReader();
     reader.onload = (e) => {
-      this.currentPdfSrc = e.target.result;
+      const arrayBuffer = e.target.result;
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const pdfHeader = String.fromCharCode.apply(null, uint8Array.subarray(0, 4));
+      if (pdfHeader !== '%PDF') {
+        displayError("File is not a valid PDF.");
+        return;
+      }
+      this.currentPdfSrc = URL.createObjectURL(new Blob([arrayBuffer], { type: 'application/pdf' }));
       updateState(true, false); // update state to show current size and enable buttons
     };
     reader.onerror = () => {
