@@ -4,6 +4,7 @@ body {
   align-items: center;
   margin: 0;
   font-family: Arial, sans-serif;
+  font-size: 18px;
 }
 
 .navbar {
@@ -12,7 +13,7 @@ body {
   align-items: center;
   width: 100%;
   background-color: #007bff;
-  padding: 10px 20px;
+  padding: 20px 40px;
   position: fixed;
   top: 0;
   left: 0;
@@ -23,7 +24,7 @@ body {
 .navbar-brand {
   color: white;
   text-decoration: none;
-  font-size: 24px;
+  font-size: 30px;
   font-weight: bold;
 }
 
@@ -35,12 +36,13 @@ body {
 }
 
 .nav-item {
-  margin-left: 20px;
+  margin-left: 30px;
 }
 
 .nav-link {
   color: white;
   text-decoration: none;
+  font-size: 20px;
 }
 
 .nav-link:hover {
@@ -51,27 +53,31 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80px 20px 20px;
-  /* Added padding to account for the fixed navbar */
+  padding: 120px 20px 20px;
   background-color: white;
   width: 100%;
-  max-width: 8000px;
   height: 100%;
-  max-width: 8000px;
 }
 
 h1 {
-  margin-bottom: 20px;
+  margin-bottom: 40px;
+  font-size: 36px;
 }
 
 .upload-container {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+  width: 100%;
 }
 
 .upload-label {
   display: flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
+  margin-bottom: 20px;
 }
 
 .upload-label input[type="file"] {
@@ -80,16 +86,31 @@ h1 {
 
 .upload-label .button {
   display: inline-block;
-  padding: 10px 20px;
+  padding: 20px 40px;
   color: white;
   background-color: #007bff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 18px;
 }
 
 .upload-label .button:hover {
   background-color: #0056b3;
+}
+
+.drag-drop-area {
+  width: 80%;
+  height: 300px;
+  border: 2px dashed #007bff;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #007bff;
+  margin-top: 20px;
 }
 
 .resize-fields {
@@ -97,48 +118,43 @@ h1 {
   flex-direction: column;
   align-items: flex-start;
   width: 100%;
-  max-width: 300px;
-  margin-top: 20px;
+  max-width: 400px;
+  margin-top: 40px;
 }
 
 .input-width,
 .input-height {
   width: 100%;
-  margin-bottom: 10px;
-  padding: 5px;
+  margin-bottom: 20px;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-size: 18px;
 }
 
 .buttons {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .initial-options {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 20px;
-}
-
-.reduce-size-options {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 10px;
+  margin-top: 40px;
 }
 
 button {
-  padding: 10px 20px;
+  padding: 20px 40px;
   color: white;
   background-color: #007bff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-top: 10px;
+  font-size: 18px;
+  margin-bottom: 10px;
 }
 
 button.blurred {
@@ -150,12 +166,19 @@ button:hover:not(.blurred) {
   background-color: #0056b3;
 }
 
+select {
+  padding: 10px;
+  font-size: 18px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .error {
   color: red;
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .downloading-message {
   color: green;
-  font-size: 14px;
+  font-size: 18px;
 }

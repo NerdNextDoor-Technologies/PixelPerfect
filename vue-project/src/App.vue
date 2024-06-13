@@ -12,10 +12,13 @@
   
     <h1>Image Resizer and Compressor</h1>
     <div class="upload-container">
-      <label class="upload-label">
-        <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading">
-        <span class="button">Select Image</span>
-      </label>
+      <div class="drag-drop-area" @drop.prevent="handleFileDrop" @dragover.prevent>
+        <label class="upload-label">
+          <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading">
+          <span class="button">Select Image</span>
+        </label>
+        <p>or drag and drop an image here</p>
+      </div>
     </div>
     <div v-if="imageModelInstance.currentImageSrc && appStateInstance.currentDimensionsVisible">
       <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
@@ -36,18 +39,16 @@
         <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
       </div>
     </div>
-    <div v-else class="initial-options">
-      <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
-      <div class="reduce-size-options">
-        <label for="sizeOptions">Reduce Image Size:</label>
-        <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">
-          <option value="" disabled>Select a size</option>
-          <option value="512000">500 KB</option>
-          <option value="1048576">1 MB</option>
-          <option value="2097152">2 MB</option>
-          <option value="3145728">3 MB</option>
-        </select>
-      </div>
+    <div v-else-if="imageModelInstance.currentImageSrc" class="initial-options">
+      <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
+      <label for="sizeOptions">Reduce Image Size:</label>
+      <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
+        <option value="" disabled>Select a size</option>
+        <option value="512000">500 KB</option>
+        <option value="1048576">1 MB</option>
+        <option value="2097152">2 MB</option>
+        <option value="3145728">3 MB</option>
+      </select>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
     <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
