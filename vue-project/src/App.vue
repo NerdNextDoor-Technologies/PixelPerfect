@@ -1,40 +1,61 @@
 <template>
   <div id="app">
-    <h1>Image Resizer</h1>
-    <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading"><br>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a href="#" class="navbar-brand">Image App</a>
+      <ul class="navbar-nav">
+        <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
+      </ul>
+    </nav>
+  
+    <h1>Image Resizer and Compressor</h1>
+    <div class="upload-container">
+      <label class="upload-label">
+        <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading">
+        <span class="button">Select Image</span>
+      </label>
+    </div>
     <div v-if="imageModelInstance.currentImageSrc && appStateInstance.currentDimensionsVisible">
       <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
       <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
     </div>
-    <div v-if="appStateInstance.showResizeFields">
+    <div v-if="appStateInstance.showResizeFields" class="resize-fields">
       <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')"><br>
+      <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')">
       <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
       <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')"><br>
+      <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')">
       <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
       <label>
         <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
-      </label><br>
-      <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button><br>
-      <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
+      </label>
+      <div class="buttons">
+        <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
+        <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
+      </div>
     </div>
-    <div v-else>
-      <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button><br>
-      <label for="sizeOptions">Reduce Image Size:</label>
-      <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">
-        <option value="" disabled>Select a size</option>
-        <option value="512000">500 KB</option>
-        <option value="1048576">1 MB</option>
-        <option value="2097152">2 MB</option>
-        <option value="3145728">3 MB</option>
-      </select><br>
+    <div v-else class="initial-options">
+      <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
+      <div class="reduce-size-options">
+        <label for="sizeOptions">Reduce Image Size:</label>
+        <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">
+          <option value="" disabled>Select a size</option>
+          <option value="512000">500 KB</option>
+          <option value="1048576">1 MB</option>
+          <option value="2097152">2 MB</option>
+          <option value="3145728">3 MB</option>
+        </select>
+      </div>
     </div>
     <canvas ref="canvas" style="display:none;"></canvas>
     <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
     <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
   </div>
-</template>
+  </template>
+
+
 
 <script>
 import { ImageData, Errors, AppState } from './models/image/ImageModel.js';
@@ -51,7 +72,7 @@ export default {
       errorMessages: new Errors(),
       appStateInstance: new AppState(),
       selectedSize: '',
-      lastModifiedDimension: '' // New data property to track the last modified dimension
+      lastModifiedDimension: ''
     };
   },
   computed: {
@@ -97,7 +118,7 @@ export default {
       }
     },
     updateDimensions(dimension) {
-      this.lastModifiedDimension = dimension; // Track the last modified dimension
+      this.lastModifiedDimension = dimension;
       if (this.appStateInstance.keepAspectRatio) {
         this.keepAspectRatio(dimension);
       }
@@ -117,7 +138,7 @@ export default {
           canvas = document.createElement('canvas');
           const resizedImageURL = resizeImage(img, this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
-          this.appStateInstance.currentDimensionsVisible = false; // Hide current dimensions and size when resizing
+          this.appStateInstance.currentDimensionsVisible = false;
         } catch (error) {
           this.displayErrorMessage(error.message);
         }
@@ -160,19 +181,19 @@ export default {
     },
     showResizeFields() {
       this.appStateInstance.showResizeFields = true;
-      this.appStateInstance.currentDimensionsVisible = true; // Hide current size when showing resize fields
+      this.appStateInstance.currentDimensionsVisible = true;
     },
     resetImageForm() {
       this.appStateInstance.showResizeFields = false;
       this.imageModelInstance.targetWidth = null;
       this.imageModelInstance.targetHeight = null;
       this.appStateInstance.errorMessage = '';
-      this.appStateInstance.currentDimensionsVisible = true; // Show current dimensions and size when going back
+      this.appStateInstance.currentDimensionsVisible = true;
       this.appStateInstance.buttonsDisabled = false;
     },
     displayErrorMessage(message) {
       this.appStateInstance.errorMessage = message;
-      this.appStateInstance.buttonsDisabled = true; // Disable buttons when there's an error
+      this.appStateInstance.buttonsDisabled = true;
     },
   },
 };

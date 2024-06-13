@@ -1,84 +1,161 @@
 body {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100vh;
   margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: #007bff;
+  padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  color: white;
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.navbar-nav {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin-left: 20px;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
 }
 
 #app {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  border: 1px solid #ccc;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  align-items: center;
+  padding: 80px 20px 20px;
+  /* Added padding to account for the fixed navbar */
+  background-color: white;
+  width: 100%;
+  max-width: 8000px;
+  height: 100%;
+  max-width: 8000px;
 }
 
 h1 {
   margin-bottom: 20px;
 }
 
-label {
-  margin-top: 10px;
+.upload-container {
+  margin-bottom: 20px;
 }
 
-.input-width {
-  margin-left: 5px;
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 200px;
+.upload-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
-.input-height {
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 200px;
+.upload-label input[type="file"] {
+  display: none;
 }
 
-button {
-  margin-top: 10px;
-  padding: 10px 15px;
-  background-color: #007bff;
+.upload-label .button {
+  display: inline-block;
+  padding: 10px 20px;
   color: white;
+  background-color: #007bff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-button:hover {
+.upload-label .button:hover {
   background-color: #0056b3;
 }
 
-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+.resize-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 300px;
+  margin-top: 20px;
+}
+
+.input-width,
+.input-height {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.initial-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.reduce-size-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
 }
 
 button.blurred {
   filter: blur(2px);
+  cursor: not-allowed;
 }
 
-select {
-  margin-top: 10px;
-  padding: 5px;
-  width: 215px;
-}
-
-.downloading-message {
-  color: green;
-  margin-top: 10px;
+button:hover:not(.blurred) {
+  background-color: #0056b3;
 }
 
 .error {
   color: red;
-  margin-top: 10px;
+  font-size: 12px;
 }
 
-label input[type="checkbox"] {
-  margin-left: 5px;
+.downloading-message {
+  color: green;
+  font-size: 14px;
 }
