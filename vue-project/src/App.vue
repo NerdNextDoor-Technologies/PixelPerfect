@@ -9,7 +9,7 @@
         <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
       </ul>
     </nav>
-  
+
     <h1>Image Resizer and Compressor</h1>
     <div class="upload-container">
       <div class="drag-drop-area" @drop.prevent="handleFileDrop" @dragover.prevent>
@@ -54,17 +54,11 @@
     <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
     <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
   </div>
-  </template>
-
-
+</template>
 
 <script>
 import { ImageData, Errors, AppState } from './models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from './helpers/ImageHelper.js';
-import './assets/styles/ImageStyles.css';
-import { MAX_IMAGE_DIMENSIONS } from './assets/constants/constants.js';
-
-let canvas;
 
 export default {
   data() {
@@ -92,6 +86,12 @@ export default {
         return;
       }
       this.imageModelInstance.loadImage(file, this.displayErrorMessage.bind(this), this.updateState.bind(this));
+    },
+    handleFileDrop(event) {
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        this.imageModelInstance.loadImage(files[0], this.displayErrorMessage.bind(this), this.updateState.bind(this));
+      }
     },
     updateState(currentDimensionsVisible, buttonsDisabled) {
       this.appStateInstance.currentDimensionsVisible = currentDimensionsVisible;
@@ -136,7 +136,6 @@ export default {
         if (!this.imageModelInstance.isValid) return;
 
         try {
-          canvas = document.createElement('canvas');
           const resizedImageURL = resizeImage(img, this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false;
@@ -160,7 +159,6 @@ export default {
         if (!this.imageModelInstance.isValid) return;
 
         try {
-          canvas = document.createElement('canvas');
           const reducedImageURL = reduceImageToSize(img, parseInt(this.selectedSize));
           this.createDownloadLinkAndTriggerDownload(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
@@ -199,5 +197,6 @@ export default {
   },
 };
 </script>
+
 
 <style src="./assets/styles/ImageStyles.css"></style>
