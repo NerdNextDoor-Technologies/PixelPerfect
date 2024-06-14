@@ -1,56 +1,11 @@
-<!-- App.vue -->
-<template>
-  <div id="app">
-    <header>
-      <h1>Welcome to PixelPerfect</h1>
-    </header>
-    <main>
-      <div v-if="!selectedFileType">
-        <h2>Select File Type to Convert</h2>
-        <button @click="selectFileType('image')">Image</button>
-        <!-- Additional file type options can be added here -->
-      </div>
-      <div v-else>
-        <ImageConverter v-if="selectedFileType === 'image'" :goBackToHome="resetFileType" />
-        <!-- Additional file type components can be added here -->
-      </div>
-    </main>
-  </div>
+<template> 
+  <div id="app"> 
+    <div id="nav"> 
+      <router-link to="/">Home</router-link> | 
+      <router-link to="/about">About</router-link> | 
+      added a new route to our app.vue file// 
+       <router-link to="/profile">Profile</router-link> 
+    </div> 
+    <router-view/> 
+  </div> 
 </template>
-
-<script>
-import ImageConverter from './components/ImageConverter.vue';
-// Import other file type components as needed
-
-export default {
-  components: {
-    ImageConverter,
-    // Other components can be declared here
-  },
-  data() {
-    return {
-      selectedFileType: '',
-    };
-  },
-  methods: {
-    selectFileType(fileType) {
-      this.selectedFileType = fileType;
-    },
-    resetFileType() {
-      this.selectedFileType = '';
-    },
-  },
-};
-</script>
-
-<style>
-/* Add your global styles here */
-#app {
-  text-align: center;
-}
-button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-}
-</style>
