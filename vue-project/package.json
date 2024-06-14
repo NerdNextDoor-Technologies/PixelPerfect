@@ -9,11 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.4.21"
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.4.0",
     "@vitejs/plugin-vue": "^5.0.4",
+    "@vue/cli-plugin-router": "~5.0.0",
     "eslint": "^9.4.0",
     "eslint-plugin-vue": "^9.26.0",
     "globals": "^15.4.0",

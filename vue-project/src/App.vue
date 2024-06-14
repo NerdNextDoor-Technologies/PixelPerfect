@@ -9,3 +9,5 @@
     <router-view/> 
   </div> 
 </template>
+
+<script src="https://unpkg.com/vue-router"></script>
