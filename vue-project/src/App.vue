@@ -1,104 +1,79 @@
 <template>
   <div id="app">
-    <h1>PDF Resizer</h1>
-    <input type="file" @change="handleFileSelection" accept="application/pdf" :disabled="appStateInstance.isDownloading"><br>
-    <div v-if="pdfModelInstance.currentPdfSrc && appStateInstance.currentFileDetailsVisible">
-      <p>Current Size: <span>{{ (pdfModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
+    <h1>PDF Compressor</h1>
+    <form @submit.prevent="onSubmit">
+      <input type="file" @change="changeHandler" />
+      <button type="submit" :disabled="state === 'loading'">Compress PDF</button>
+    </form>
+    <div v-if="state === 'toBeDownloaded'">
+      <a :href="downloadLink" download="compressed.pdf">Download Compressed PDF</a>
     </div>
-    <div v-if="appStateInstance.showResizeFields">
-      <label for="sizeOptions">Reduce PDF Size:</label>
-      <select v-model="selectedSize" @change="reduceSizePdf" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isPdfLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">
-        <option value="" disabled>Select a size</option>
-        <option value="512000">500 KB</option>
-        <option value="1048576">1 MB</option>
-        <option value="2097152">2 MB</option>
-        <option value="3145728">3 MB</option>
-      </select><br>
-      <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
-      <button @click="resetPdfForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isPdfLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
-    </div>
-    <div v-else>
-      <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isPdfLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize PDF</button><br>
-    </div>
-    <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
-    <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
   </div>
 </template>
 
 <script>
-import { PdfData, Errors, AppState } from './models/pdf/PdfModel.js';
-import { reducePdfToSize } from './helpers/PdfHelper.js';
-import './assets/styles/PdfStyles.css';
+import { ref } from 'vue';
+import { _GSPS2PDF } from './ghostscript-utils';
 
 export default {
-  data() {
-    return {
-      pdfModelInstance: new PdfData(),
-      errorMessages: new Errors(),
-      appStateInstance: new AppState(),
-      selectedSize: ''
-    };
-  },
-  computed: {
-    isPdfLoaded() {
-      return !!this.pdfModelInstance.currentPdfSrc;
+  setup() {
+    const state = ref("init");
+    const file = ref(undefined);
+    const downloadLink = ref(undefined);
+
+    function changeHandler(event) {
+      const selectedFile = event.target.files[0];
+      const url = window.URL.createObjectURL(selectedFile);
+      file.value = { filename: selectedFile.name, url };
+      state.value = 'selected';
     }
-  },
-  methods: {
-    handleFileSelection(event) {
-      const file = event.target.files[0];
-      if (!file) {
-        this.displayErrorMessage("No file selected.");
-        return;
-      }
-      this.pdfModelInstance.loadPdf(file, this.displayErrorMessage.bind(this), this.updateState.bind(this));
-    },
-    updateState(currentFileDetailsVisible, buttonsDisabled) {
-      this.appStateInstance.currentFileDetailsVisible = currentFileDetailsVisible;
-      this.appStateInstance.buttonsDisabled = buttonsDisabled;
-    },
-    async reduceSizePdf() {
-      if (!this.selectedSize) {
-        this.displayErrorMessage("Please select a size.");
-        return;
-      }
-      
-      try {
-        const reducedPdfURL = await reducePdfToSize(this.pdfModelInstance.currentPdfSrc, parseInt(this.selectedSize));
-        this.createDownloadLinkAndTriggerDownload(reducedPdfURL, `reduced-size-pdf-${this.selectedSize}.pdf`);
-      } catch (error) {
-        this.displayErrorMessage(error.message);
-      }
-    },
-    createDownloadLinkAndTriggerDownload(dataURL, fileName) {
-      this.appStateInstance.isDownloading = true;
-      const link = document.createElement('a');
-      link.href = dataURL;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => {
-        this.appStateInstance.isDownloading = false;
-      }, 2000);
-    },
-    showResizeFields() {
-      this.appStateInstance.showResizeFields = true;
-      this.appStateInstance.currentFileDetailsVisible = true;
-    },
-    resetPdfForm() {
-      this.appStateInstance.showResizeFields = false;
-      this.selectedSize = '';
-      this.appStateInstance.errorMessage = '';
-      this.appStateInstance.currentFileDetailsVisible = true;
-      this.appStateInstance.buttonsDisabled = false;
-    },
-    displayErrorMessage(message) {
-      this.appStateInstance.errorMessage = message;
-      this.appStateInstance.buttonsDisabled = true;
-    },
+
+    function onSubmit() {
+      const { filename, url } = file.value;
+      compressPDF(url, filename);
+      state.value = "loading";
+    }
+
+    function compressPDF(pdf, filename) {
+      const dataObject = { psDataURL: pdf };
+      _GSPS2PDF(
+        dataObject,
+        (element) => {
+          console.log(element);
+          state.value = "toBeDownloaded";
+          loadPDFData(element, filename).then(({ pdfURL }) => {
+            downloadLink.value = pdfURL;
+          });
+        },
+        (...args) => console.log("Progress:", JSON.stringify(args)),
+        (element) => console.log("Status Update:", JSON.stringify(element))
+      );
+    }
+
+    async function loadPDFData(element, filename) {
+      const response = await fetch(element.pdfDataURL);
+      const blob = await response.blob();
+      const pdfURL = window.URL.createObjectURL(blob);
+      return { pdfURL };
+    }
+
+    return {
+      state,
+      changeHandler,
+      onSubmit,
+      downloadLink,
+    };
   },
 };
 </script>
 
-<style src="./assets/styles/PdfStyles.css"></style>
+<style scoped>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+}
+</style>
