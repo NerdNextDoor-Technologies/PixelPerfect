@@ -51,6 +51,7 @@ export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, status
 
 function loadScript(url, onLoadCallback) {
     const script = document.createElement('script');
+    script.type = 'module';
     script.src = url;
     script.onload = onLoadCallback;
     document.body.appendChild(script);
