@@ -1,9 +1,97 @@
-export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, statusUpdateCallback) {
+export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, statusUpdateCallback, compressionLevel) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", dataStruct.psDataURL);
     xhr.responseType = "arraybuffer";
     xhr.onload = function () {
         window.URL.revokeObjectURL(dataStruct.psDataURL);
+
+        let gsArguments;
+        switch (compressionLevel) {
+            case 'high':
+                gsArguments = [
+                    '-sDEVICE=pdfwrite',
+                    '-dCompatibilityLevel=1.4',
+                    '-dPDFSETTINGS=/screen',
+                    '-dNOPAUSE',
+                    '-dQUIET',
+                    '-dBATCH',
+                    '-sOutputFile=output.pdf',
+                    'input.pdf',
+                    '-dDownsampleColorImages=true',
+                    '-dDownsampleGrayImages=true',
+                    '-dDownsampleMonoImages=true',
+                    '-dColorImageDownsampleType=/Bicubic',
+                    '-dGrayImageDownsampleType=/Bicubic',
+                    '-dMonoImageDownsampleType=/Subsample',
+                    '-dColorImageResolution=72',
+                    '-dGrayImageResolution=72',
+                    '-dMonoImageResolution=72'
+                ];
+                break;
+            case 'medium':
+                gsArguments = [
+                    '-sDEVICE=pdfwrite',
+                    '-dCompatibilityLevel=1.4',
+                    '-dPDFSETTINGS=/ebook',
+                    '-dNOPAUSE',
+                    '-dQUIET',
+                    '-dBATCH',
+                    '-sOutputFile=output.pdf',
+                    'input.pdf',
+                    '-dDownsampleColorImages=true',
+                    '-dDownsampleGrayImages=true',
+                    '-dDownsampleMonoImages=true',
+                    '-dColorImageDownsampleType=/Bicubic',
+                    '-dGrayImageDownsampleType=/Bicubic',
+                    '-dMonoImageDownsampleType=/Subsample',
+                    '-dColorImageResolution=100',
+                    '-dGrayImageResolution=100',
+                    '-dMonoImageResolution=100'
+                ];
+                break;
+            case 'low':
+                gsArguments = [
+                    '-sDEVICE=pdfwrite',
+                    '-dCompatibilityLevel=1.4',
+                    '-dPDFSETTINGS=/printer',
+                    '-dNOPAUSE',
+                    '-dQUIET',
+                    '-dBATCH',
+                    '-sOutputFile=output.pdf',
+                    'input.pdf',
+                    '-dDownsampleColorImages=true',
+                    '-dDownsampleGrayImages=true',
+                    '-dDownsampleMonoImages=true',
+                    '-dColorImageDownsampleType=/Bicubic',
+                    '-dGrayImageDownsampleType=/Bicubic',
+                    '-dMonoImageDownsampleType=/Subsample',
+                    '-dColorImageResolution=150',
+                    '-dGrayImageResolution=150',
+                    '-dMonoImageResolution=150'
+                ];
+                break;
+            default:
+                gsArguments = [
+                    '-sDEVICE=pdfwrite',
+                    '-dCompatibilityLevel=1.4',
+                    '-dPDFSETTINGS=/screen',
+                    '-dNOPAUSE',
+                    '-dQUIET',
+                    '-dBATCH',
+                    '-sOutputFile=output.pdf',
+                    'input.pdf',
+                    '-dDownsampleColorImages=true',
+                    '-dDownsampleGrayImages=true',
+                    '-dDownsampleMonoImages=true',
+                    '-dColorImageDownsampleType=/Bicubic',
+                    '-dGrayImageDownsampleType=/Bicubic',
+                    '-dMonoImageDownsampleType=/Subsample',
+                    '-dColorImageResolution=72',
+                    '-dGrayImageResolution=72',
+                    '-dMonoImageResolution=72'
+                ];
+        }
+
         var Module = {
             preRun: [function () {
                 const FS = window.FS;
@@ -16,7 +104,7 @@ export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, status
                 var pdfDataURL = window.URL.createObjectURL(blob);
                 responseCallback({ pdfDataURL: pdfDataURL, url: dataStruct.url });
             }],
-            arguments: ['-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4', '-dPDFSETTINGS=/ebook', '-dNOPAUSE', '-dQUIET', '-dBATCH', '-sOutputFile=output.pdf', 'input.pdf'],
+            arguments: gsArguments,
             print: function (text) {
                 statusUpdateCallback(text);
             },
