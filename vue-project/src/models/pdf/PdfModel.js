@@ -5,7 +5,7 @@ const States = {
   TO_BE_DOWNLOADED: 'toBeDownloaded'
 };
 
-class DefaultValues {
+class PdfData {
   constructor() {
     /** @type {string} */
     this.state = States.INIT;
@@ -21,4 +21,4 @@ class DefaultValues {
   }
 }
 
-export { DefaultValues, States };
+export { PdfData, States };

@@ -17,17 +17,17 @@
 
 <script>
 import { _GSPS2PDF } from './ghostscript-utils';
-import { DefaultValues, States } from './models/pdf/PdfModel';
+import { PdfData, States } from './models/pdf/PdfModel';
 
 
 export default {
   data() {
-    const defaults = new DefaultValues();
+    const uploaded_pdf = new PdfData();
     return {
-      state: defaults.state,
-      file: defaults.file,
-      downloadLink: defaults.downloadLink,
-      compressionLevel: defaults.compressionLevel
+      state: uploaded_pdf.state,
+      file: uploaded_pdf.file,
+      downloadLink: uploaded_pdf.downloadLink,
+      compressionLevel: uploaded_pdf.compressionLevel
     };
   },
   methods: {
