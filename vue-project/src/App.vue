@@ -17,55 +17,58 @@
 
 <script>
 import { _GSPS2PDF } from './ghostscript-utils';
+import { DefaultValues, States } from './models/pdf/PdfModel';
+
 
 export default {
   data() {
+    const defaults = new DefaultValues();
     return {
-      state: "init",
-      file: undefined,
-      downloadLink: undefined,
-      compressionLevel: "low"
+      state: defaults.state,
+      file: defaults.file,
+      downloadLink: defaults.downloadLink,
+      compressionLevel: defaults.compressionLevel
     };
   },
   methods: {
     changeHandler(event) {
       const file = event.target.files[0];
-      const url = window.URL.createObjectURL(file);
-      this.file = { filename: file.name, url };
-      this.state = 'selected';
+      if (file) {
+        const url = window.URL.createObjectURL(file);
+        this.file = { filename: file.name, url };
+        this.state = States.SELECTED;
+      }
     },
     onSubmit(event) {
       event.preventDefault();
-      const { filename, url } = this.file;
-      this.compressPDF(url, filename, this.compressionLevel);
-      this.state = "loading";
+      if (this.file) {
+        const { filename, url } = this.file;
+        this.compressPDF(url, filename, this.compressionLevel);
+        this.state = States.LOADING;
+      }
     },
     compressPDF(pdf, filename, compressionLevel) {
       const dataObject = { psDataURL: pdf };
       _GSPS2PDF(dataObject,
         (element) => {
-          this.state = "toBeDownloaded";
-          this.loadPDFData(element, filename).then(({ pdfURL }) => {
+          this.state = States.TO_BE_DOWNLOADED;
+          this.loadPDFData(element).then(({ pdfURL }) => {
             this.downloadLink = pdfURL;
           });
         },
-        (...args) => console.log("Progress:", JSON.stringify(args)),
-        (element) => console.log("Status Update:", JSON.stringify(element)),
+        (...args) => console.log('Progress:', JSON.stringify(args)),
+        (element) => console.log('Status Update:', JSON.stringify(element)),
         compressionLevel
       );
     },
-    loadPDFData(element, filename) {
+    loadPDFData(element) {
       return new Promise((resolve) => {
-        const link = document.createElement('a');
-        link.href = element.pdfDataURL;
-        link.download = filename;
         resolve({ pdfURL: element.pdfDataURL });
       });
     }
   }
 };
 </script>
-
 
 <style scoped>
 #app {
