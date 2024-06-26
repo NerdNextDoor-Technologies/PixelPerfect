@@ -16,7 +16,8 @@
 </template>
 
 <script>
-import { _GSPS2PDF } from './ghostscript-utils';
+
+import { compressPDF } from './helpers/PdfHelper';
 import { PdfData, States } from './models/pdf/PdfModel';
 
 
@@ -43,25 +44,33 @@ export default {
       event.preventDefault();
       if (this.file) {
         const { filename, url } = this.file;
-        this.compressPDF(url, filename, this.compressionLevel);
         this.state = States.LOADING;
+        this.beginPdfcompression(url, filename, this.compressionLevel);
       }
     },
-    compressPDF(pdf, filename, compressionLevel) {
-      const dataObject = { psDataURL: pdf };
-      _GSPS2PDF(dataObject,
-        (element) => {
-          this.state = States.TO_BE_DOWNLOADED;
-          this.loadPDFData(element).then(({ pdfURL }) => {
-            this.downloadLink = pdfURL;
-          });
-        },
-        (...args) => console.log('Progress:', JSON.stringify(args)),
-        (element) => console.log('Status Update:', JSON.stringify(element)),
-        compressionLevel
+    beginPdfcompression(url, filename, compressionLevel) {
+      compressPDF(
+        url,
+        filename,
+        compressionLevel,
+        this.handleCompressionCompletion,
+        this.handleCompressionProgress,
+        this.handleCompressionStatusUpdate
       );
     },
-    loadPDFData(element) {
+    handleCompressionCompletion(element) {
+      this.state = States.TO_BE_DOWNLOADED;
+      this.getPdfDownloadLink(element).then(({ pdfURL }) => {
+        this.downloadLink = pdfURL;
+      });
+    },
+    handleCompressionProgress(...args) {
+      console.log('Compression Progress:', JSON.stringify(args));
+    },
+    handleCompressionStatusUpdate(element) {
+      console.log('Compression Status Update:', JSON.stringify(element));
+    },
+    getPdfDownloadLink(element) {
       return new Promise((resolve) => {
         resolve({ pdfURL: element.pdfDataURL });
       });
