@@ -29,7 +29,7 @@
     <div v-if="state === 'loading'" class="downloading-message">Compressing...</div>
     <div v-if="state === 'toBeDownloaded'" class="download-section">
       <a :href="downloadLink" download="compressed.pdf" class="button">Download Compressed PDF</a>
-      <button @click="doAnotherConversion" class="button">Do Another Conversion</button>
+      <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
     </div>
   </div>
 </template>

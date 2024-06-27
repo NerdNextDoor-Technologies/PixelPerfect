@@ -70,11 +70,11 @@ h1 {
   border: 2px dashed #007bff;
   border-radius: 10px;
   padding: 40px;
-  width: 450%;
-  margin-right: 650px;
-  max-width: 800px;
+  width: 400%;
+  max-width: 900px;
   height: 400px;
   margin-bottom: 20px;
+  margin-right: 750px;
   cursor: pointer;
   text-align: center;
   transition: background-color 0.2s;
@@ -147,8 +147,23 @@ h1 {
   background-color: #0056b3;
 }
 
+.download-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.download-section .button {
+  margin-top: 10px;
+}
+
+.another-conversion-button {
+  margin-top: 10px;
+}
+
 .downloading-message {
   color: green;
   font-size: 14px;
-  margin-top: 60px;
+  margin-top: 20px;
 }
