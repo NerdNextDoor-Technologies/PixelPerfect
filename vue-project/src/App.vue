@@ -1,19 +1,32 @@
 <template>
   <div id="app">
-    <h1>PDF Compressor</h1>
+    <nav class="navbar">
+      <a href="#" class="navbar-brand">PDF Compressor</a>
+      <ul class="navbar-nav">
+        <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">About</a></li>
+      </ul>
+    </nav>
     <form @submit="onSubmit" class="form-container">
-      <input type="file" @change="onFileChange" class="file-input" />
-      <div v-if="file" class="compression-options">
-        <select v-model="compressionLevel" class="compression-select">
+      <div class="upload-container">
+        <label class="upload-label">
+          <span class="button">Upload PDF</span>
+          <input type="file" @change="onFileChange" />
+        </label>
+      </div>
+      <div v-if="file" class="resize-fields">
+        <select v-model="compressionLevel" class="input-width">
           <option value="low">Low Compression</option>
           <option value="medium">Medium Compression</option>
           <option value="high">High Compression</option>
         </select>
-        <button type="submit" class="compress-button">Compress PDF</button>
+        <div class="buttons">
+          <button type="submit" class="compress-button">Compress PDF</button>
+        </div>
       </div>
     </form>
-    <div v-if="state === 'loading'" class="loading">Compressing...</div>
-    <a v-if="state === 'toBeDownloaded'" :href="downloadLink" download="compressed.pdf" class="download-link">Download Compressed PDF</a>
+    <div v-if="state === 'loading'" class="downloading-message">Compressing...</div>
+    <a v-if="state === 'toBeDownloaded'" :href="downloadLink" download="compressed.pdf" class="button">Download Compressed PDF</a>
   </div>
 </template>
 

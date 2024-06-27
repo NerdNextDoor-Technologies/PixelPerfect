@@ -1,89 +1,135 @@
 /* assets/styles/PdfStyles.css */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: #007bff;
+  padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  color: white;
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.navbar-nav {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin-left: 20px;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
 #app {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: 'Arial', sans-serif;
-  color: #333;
-  padding: 20px;
-  background-color: #f9f9f9;
-  min-height: 100vh;
+  padding: 80px 20px 20px;
+  background-color: white;
+  width: 100%;
+  max-width: 800px;
   box-sizing: border-box;
 }
 
 h1 {
-  font-size: 2em;
   margin-bottom: 20px;
 }
 
-.form-container {
+.upload-container {
+  margin-bottom: 20px;
+}
+
+.upload-label {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  width: 100%;
-  max-width: 400px;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.file-input {
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  font-size: 1em;
-}
-
-.compression-options {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.compression-select {
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  font-size: 1em;
-}
-
-.compress-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  background-color: #007bff;
-  color: #fff;
-  font-size: 1em;
   cursor: pointer;
 }
 
-.compress-button:hover {
+.upload-label input[type="file"] {
+  display: none;
+}
+
+.upload-label .button {
+  display: inline-block;
+  padding: 10px 20px;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.upload-label .button:hover {
   background-color: #0056b3;
 }
 
-.loading {
+.resize-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 300px;
   margin-top: 20px;
-  font-size: 1.2em;
-  color: #555;
 }
 
-.download-link {
-  margin-top: 20px;
+.input-width {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+button {
   padding: 10px 20px;
+  color: white;
+  background-color: #007bff;
   border: none;
   border-radius: 4px;
-  background-color: #28a745;
-  color: #fff;
-  font-size: 1em;
-  text-decoration: none;
+  cursor: pointer;
 }
 
-.download-link:hover {
-  background-color: #218838;
+button:hover {
+  background-color: #0056b3;
+}
+
+.downloading-message {
+  color: green;
+  font-size: 14px;
+  margin-top: 20px;
 }
