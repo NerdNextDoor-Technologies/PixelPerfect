@@ -27,7 +27,10 @@
       </div>
     </form>
     <div v-if="state === 'loading'" class="downloading-message">Compressing...</div>
-    <a v-if="state === 'toBeDownloaded'" :href="downloadLink" download="compressed.pdf" class="button">Download Compressed PDF</a>
+    <div v-if="state === 'toBeDownloaded'" class="download-section">
+      <a :href="downloadLink" download="compressed.pdf" class="button">Download Compressed PDF</a>
+      <button @click="doAnotherConversion" class="button">Do Another Conversion</button>
+    </div>
   </div>
 </template>
 
@@ -102,6 +105,9 @@ export default {
       return new Promise((resolve) => {
         resolve({ pdfURL: element.pdfDataURL });
       });
+    },
+    doAnotherConversion() {
+      window.location.reload();
     }
   }
 };
