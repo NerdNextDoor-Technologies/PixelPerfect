@@ -8,7 +8,7 @@
       </ul>
     </nav>
     <form @submit="onSubmit" class="form-container">
-      <div class="upload-container" @dragover.prevent @drop.prevent="onDrop">
+      <div v-if="!file" class="upload-container" @dragover.prevent @drop.prevent="onDrop">
         <label class="upload-label">
           <span>Drag and drop your PDF here</span>
           <span class="button">Upload PDF</span>
