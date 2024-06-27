@@ -8,8 +8,9 @@
       </ul>
     </nav>
     <form @submit="onSubmit" class="form-container">
-      <div class="upload-container">
+      <div class="upload-container" @dragover.prevent @drop.prevent="onDrop">
         <label class="upload-label">
+          <span>Drag and drop your PDF here</span>
           <span class="button">Upload PDF</span>
           <input type="file" @change="onFileChange" />
         </label>
@@ -47,6 +48,17 @@ export default {
   methods: {
     onFileChange(event) {
       const file = event.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        const url = window.URL.createObjectURL(file);
+        this.file = { filename: file.name, url };
+        this.state = States.SELECTED;
+      } else {
+        this.file = null;
+        alert('Please upload a valid PDF file.');
+      }
+    },
+    onDrop(event) {
+      const file = event.dataTransfer.files[0];
       if (file && file.type === 'application/pdf') {
         const url = window.URL.createObjectURL(file);
         this.file = { filename: file.name, url };
