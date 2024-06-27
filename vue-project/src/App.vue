@@ -1,17 +1,19 @@
 <template>
   <div id="app">
     <h1>PDF Compressor</h1>
-    <form @submit="onSubmit">
-      <input type="file" @change="onFileChange" />
-      <select v-model="compressionLevel">
-        <option value="low">Low Compression</option>
-        <option value="medium">Medium Compression</option>
-        <option value="high">High Compression</option>
-      </select>
-      <button type="submit">Compress PDF</button>
+    <form @submit="onSubmit" class="form-container">
+      <input type="file" @change="onFileChange" class="file-input" />
+      <div v-if="file" class="compression-options">
+        <select v-model="compressionLevel" class="compression-select">
+          <option value="low">Low Compression</option>
+          <option value="medium">Medium Compression</option>
+          <option value="high">High Compression</option>
+        </select>
+        <button type="submit" class="compress-button">Compress PDF</button>
+      </div>
     </form>
-    <div v-if="state === 'loading'">Compressing...</div>
-    <a v-if="state === 'toBeDownloaded'" :href="downloadLink" download="compressed.pdf">Download Compressed PDF</a>
+    <div v-if="state === 'loading'" class="loading">Compressing...</div>
+    <a v-if="state === 'toBeDownloaded'" :href="downloadLink" download="compressed.pdf" class="download-link">Download Compressed PDF</a>
   </div>
 </template>
 
@@ -32,10 +34,13 @@ export default {
   methods: {
     onFileChange(event) {
       const file = event.target.files[0];
-      if (file) {
+      if (file && file.type === 'application/pdf') {
         const url = window.URL.createObjectURL(file);
         this.file = { filename: file.name, url };
         this.state = States.SELECTED;
+      } else {
+        this.file = null;
+        alert('Please upload a valid PDF file.');
       }
     },
     onSubmit(event) {
@@ -43,17 +48,17 @@ export default {
       if (this.file) {
         const { filename, url } = this.file;
         this.state = States.LOADING;
-        this.begincompression(url, filename, this.compressionLevel);
+        this.beginCompression(url, filename, this.compressionLevel);
       }
     },
-    begincompression(url, filename, compressionLevel) {
+    beginCompression(url, filename, compressionLevel) {
       compressPDF(
         url,
         filename,
         compressionLevel,
         this.handleCompressionCompletion,
-        this.ShowProgress,
-        this.ShowStatusUpdate
+        this.showProgress,
+        this.showStatusUpdate
       );
     },
     handleCompressionCompletion(element) {
@@ -62,10 +67,10 @@ export default {
         this.downloadLink = pdfURL;
       });
     },
-    ShowProgress(...args) {
+    showProgress(...args) {
       console.log('Compression Progress:', JSON.stringify(args));
     },
-    ShowStatusUpdate(element) {
+    showStatusUpdate(element) {
       console.log('Compression Status Update:', JSON.stringify(element));
     },
     getPdfDownloadLink(element) {
@@ -76,6 +81,5 @@ export default {
   }
 };
 </script>
-
 
 <style src="./assets/styles/PdfStyles.css"></style>
