@@ -7,7 +7,7 @@ export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, status
 
         let gsArguments;
         switch (compressionLevel) {
-            case 'high':
+            case 'HIGH':
                 gsArguments = [
                     '-sDEVICE=pdfwrite',
                     '-dCompatibilityLevel=1.4',
@@ -28,7 +28,7 @@ export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, status
                     '-dMonoImageResolution=72'
                 ];
                 break;
-            case 'medium':
+            case 'MEDIUM':
                 gsArguments = [
                     '-sDEVICE=pdfwrite',
                     '-dCompatibilityLevel=1.4',
@@ -49,7 +49,7 @@ export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, status
                     '-dMonoImageResolution=100'
                 ];
                 break;
-            case 'low':
+            case 'LOW':
                 gsArguments = [
                     '-sDEVICE=pdfwrite',
                     '-dCompatibilityLevel=1.4',

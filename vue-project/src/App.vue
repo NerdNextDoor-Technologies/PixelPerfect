@@ -17,17 +17,17 @@
       </div>
       <div v-if="file" class="resize-fields">
         <select v-model="compressionLevel" class="input-width">
-          <option value="low">Low Compression</option>
-          <option value="medium">Medium Compression</option>
-          <option value="high">High Compression</option>
+          <option value="LOW">Low Compression</option>
+          <option value="MEDIUM">Medium Compression</option>
+          <option value="HIGH">High Compression</option>
         </select>
         <div class="buttons">
           <button type="submit" class="compress-button">Compress PDF</button>
         </div>
       </div>
     </form>
-    <div v-if="state === 'loading'" class="downloading-message">Compressing...</div>
-    <div v-if="state === 'toBeDownloaded'" class="download-section">
+    <div v-if="state === 'COMPRESSION_IN_PROGRESS'" class="downloading-message">Compressing...</div>
+    <div v-if="state === 'READY_FOR_DOWNLOAD'" class="download-section">
       <a :href="downloadLink" download="compressed.pdf" class="button">Download Compressed PDF</a>
       <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
     </div>
@@ -36,14 +36,14 @@
 
 <script>
 import { compressPDF } from './helpers/PdfHelper';
-import { PdfData, States } from './models/pdf/PdfModel';
+import { PdfData, CompressionState } from './models/pdf/PdfModel';
 
 export default {
   data() {
     const uploadedPdf = new PdfData();
     return {
-      state: uploadedPdf.state,
-      file: uploadedPdf.file,
+      state: uploadedPdf.filestate,
+      file: uploadedPdf.selectedFileMetadata,
       downloadLink: uploadedPdf.downloadLink,
       compressionLevel: uploadedPdf.compressionLevel
     };
@@ -54,7 +54,7 @@ export default {
       if (file && file.type === 'application/pdf') {
         const url = window.URL.createObjectURL(file);
         this.file = { filename: file.name, url };
-        this.state = States.SELECTED;
+        this.state = CompressionState.FILE_SELECTED;
       } else {
         this.file = null;
         alert('Please upload a valid PDF file.');
@@ -65,7 +65,7 @@ export default {
       if (file && file.type === 'application/pdf') {
         const url = window.URL.createObjectURL(file);
         this.file = { filename: file.name, url };
-        this.state = States.SELECTED;
+        this.state = CompressionState.FILE_SELECTED;
       } else {
         this.file = null;
         alert('Please upload a valid PDF file.');
@@ -75,7 +75,7 @@ export default {
       event.preventDefault();
       if (this.file) {
         const { filename, url } = this.file;
-        this.state = States.LOADING;
+        this.state = CompressionState.COMPRESSION_IN_PROGRESS;
         this.beginCompression(url, filename, this.compressionLevel);
       }
     },
@@ -90,7 +90,7 @@ export default {
       );
     },
     handleCompressionCompletion(element) {
-      this.state = States.TO_BE_DOWNLOADED;
+      this.state = CompressionState.READY_FOR_DOWNLOAD;
       this.getPdfDownloadLink(element).then(({ pdfURL }) => {
         this.downloadLink = pdfURL;
       });
