@@ -2,7 +2,7 @@
     <div>
       <h1>Welcome to the Landing Page</h1>
       <button @click="navigate('ImageConverter')">Go to ImageConverter</button>
-      <button @click="navigate('hello-earth')">Go to Hello Earth</button>
+      <button @click="navigate('PdfConverter')">Go to PdfConverter</button>
     </div>
   </template>
   

@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HelloWorld from './components/ImageConverter.vue';
-import HelloEarth from './components/HelloEarth.vue';
+import ImageConverter from './components/ImageConverter.vue';
+import PdfConverter from './components/PdfConverter.vue';
 import LandingPage from './components/LandingPage.vue';
 
 const routes = [
     { path: '/', component: LandingPage, name: 'landing-page' },
-    { path: '/ImageConverter', component: HelloWorld, name: 'ImageConverter' },
-    { path: '/hello-earth', component: HelloEarth, name: 'hello-earth' }
+    { path: '/ImageConverter', component: ImageConverter, name: 'ImageConverter' },
+    { path: '/PdfConverter', component: PdfConverter, name: 'PdfConverter' }
 ];
 
 const router = createRouter({
