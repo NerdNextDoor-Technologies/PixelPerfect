@@ -1,7 +1,7 @@
 <template>
     <div>
       <h1>Welcome to the Landing Page</h1>
-      <button @click="navigate('hello-world')">Go to Hello World</button>
+      <button @click="navigate('ImageConverter')">Go to ImageConverter</button>
       <button @click="navigate('hello-earth')">Go to Hello Earth</button>
     </div>
   </template>
