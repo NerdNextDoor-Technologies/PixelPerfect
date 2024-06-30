@@ -28,7 +28,7 @@
     </form>
     <div v-if="state === 'COMPRESSION_IN_PROGRESS'" class="downloading-message">Compressing...</div>
     <div v-if="state === 'READY_FOR_DOWNLOAD'" class="download-section">
-      <a :href="downloadLink" download="compressed.pdf" class="button">Download Compressed PDF</a>
+      <a :href="safeDownloadLink" download="compressed.pdf" class="button">Download Compressed PDF</a>
       <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
     </div>
   </div>
@@ -47,6 +47,11 @@ export default {
       downloadLink: uploadedPdf.downloadLink,
       compressionLevel: uploadedPdf.compressionLevel
     };
+  },
+  computed: {
+    safeDownloadLink() {
+      return this.isValidUrl(this.downloadLink) ? this.downloadLink : '';
+    }
   },
   methods: {
     onFileChange(event) {
