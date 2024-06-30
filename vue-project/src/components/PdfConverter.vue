@@ -92,7 +92,12 @@ export default {
     handleCompressionCompletion(element) {
       this.state = CompressionState.READY_FOR_DOWNLOAD;
       this.getPdfDownloadLink(element).then(({ pdfURL }) => {
-        this.downloadLink = pdfURL;
+        if (this.isValidUrl(pdfURL)) {
+          this.downloadLink = pdfURL;
+        } else {
+          console.error('Invalid download link:', pdfURL);
+          this.downloadLink = '';
+        }
       });
     },
     showProgress(...args) {
@@ -102,15 +107,22 @@ export default {
       console.log('Compression Status Update:', JSON.stringify(element));
     },
     getPdfDownloadLink(element) {
-      return new Promise((resolve) => {
-        resolve({ pdfURL: element.pdfDataURL });
-      });
+      return Promise.resolve({ pdfURL: element.pdfDataURL });
+    },
+    isValidUrl(url) {
+      try {
+        new URL(url);
+        return true;
+      } catch (_) {
+        return false;
+      }
     },
     doAnotherConversion() {
       window.location.reload();
     }
   }
 };
+
 </script>
 
 <style src="../assets/styles/PdfStyles.css"></style>
