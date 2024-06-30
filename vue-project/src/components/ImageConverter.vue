@@ -4,55 +4,55 @@
     <nav class="navbar">
       <a href="#" class="navbar-brand">Image App</a>
       <ul class="navbar-nav">
-        <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="#" class="nav-link" @click.prevent="navigate('LandingPage')">Home</a></li>
         <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
-        <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
       </ul>
     </nav>
 
-    <h1>Image Resizer and Compressor</h1>
-    <div class="upload-container">
-      <div class="drag-drop-area" @drop.prevent="handleFileDrop" @dragover.prevent>
-        <label class="upload-label">
-          <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading">
-          <span class="button">Select Image</span>
+    <div class="content">
+      <div class="upload-container">
+        <div class="drag-drop-area" @drop.prevent="handleFileDrop" @dragover.prevent>
+          <label class="upload-label">
+            <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading">
+            <span class="button">Select Image</span>
+          </label>
+          <p>or drag and drop an image here</p>
+        </div>
+      </div>
+      <div v-if="imageModelInstance.currentImageSrc && appStateInstance.currentDimensionsVisible">
+        <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
+        <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
+      </div>
+      <div v-if="appStateInstance.showResizeFields" class="resize-fields">
+        <label for="targetWidth">Width:</label>
+        <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')">
+        <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
+        <label for="targetHeight">Height:</label>
+        <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')">
+        <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
+        <label>
+          <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
         </label>
-        <p>or drag and drop an image here</p>
+        <div class="buttons">
+          <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
+          <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
+        </div>
       </div>
-    </div>
-    <div v-if="imageModelInstance.currentImageSrc && appStateInstance.currentDimensionsVisible">
-      <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
-      <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
-    </div>
-    <div v-if="appStateInstance.showResizeFields" class="resize-fields">
-      <label for="targetWidth">Width:</label>
-      <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')">
-      <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
-      <label for="targetHeight">Height:</label>
-      <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')">
-      <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
-      <label>
-        <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
-      </label>
-      <div class="buttons">
-        <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
-        <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
+      <div v-else-if="imageModelInstance.currentImageSrc" class="initial-options">
+        <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
+        <label for="sizeOptions">Reduce Image Size:</label>
+        <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
+          <option value="" disabled>Select a size</option>
+          <option value="512000">500 KB</option>
+          <option value="1048576">1 MB</option>
+          <option value="2097152">2 MB</option>
+          <option value="3145728">3 MB</option>
+        </select>
       </div>
+      <canvas ref="canvas" style="display:none;"></canvas>
+      <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
+      <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
     </div>
-    <div v-else-if="imageModelInstance.currentImageSrc" class="initial-options">
-      <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
-      <label for="sizeOptions">Reduce Image Size:</label>
-      <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
-        <option value="" disabled>Select a size</option>
-        <option value="512000">500 KB</option>
-        <option value="1048576">1 MB</option>
-        <option value="2097152">2 MB</option>
-        <option value="3145728">3 MB</option>
-      </select>
-    </div>
-    <canvas ref="canvas" style="display:none;"></canvas>
-    <p v-if="appStateInstance.isDownloading" class="downloading-message">Downloading... please wait</p>
-    <p v-if="appStateInstance.errorMessage" class="error">{{ appStateInstance.errorMessage }}</p>
   </div>
 </template>
 
@@ -102,7 +102,7 @@ export default {
       const height = this.imageModelInstance.targetHeight;
       this.errorMessages.width = width <= 0 ? "Width must be greater than 0." : '';
       this.errorMessages.height = height <= 0 ? "Height must be greater than 0." : '';
-      if (width * height > MAX_IMAGE_DIMENSIONS) {
+      if (width * height > 25600000) {
         this.errorMessages.width = "The product of width and height must not exceed 25,600,000.";
         this.errorMessages.height = "The product of width and height must not exceed 25,600,000.";
       }
