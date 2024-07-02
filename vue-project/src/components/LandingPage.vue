@@ -108,3 +108,4 @@ body {
 
 </style>
 
+<!-- critical issue fixed -->
