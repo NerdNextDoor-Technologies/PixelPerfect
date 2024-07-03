@@ -31,6 +31,11 @@ export class ImageData {
    */
   currentFileSize;
 
+  /**
+   * @type {string}
+   */
+  currentFileName;
+
   constructor(file = null) {
     this.currentWidth = 0;
     this.currentHeight = 0;
@@ -38,6 +43,7 @@ export class ImageData {
     this.targetHeight = 0;
     this.currentImageSrc = '';
     this.currentFileSize = 0;
+    this.currentFileName = '';
 
     if (file) {
       this.loadImage(file);
@@ -46,6 +52,7 @@ export class ImageData {
 
   loadImage(file, displayError, updateState) {
     this.currentFileSize = file.size;
+    this.currentFileName = file.name; // Add this line to store the file name
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -95,6 +102,7 @@ export class ImageData {
   }
 }
 
+
 export class Errors {
   /**
    * @type {string}
@@ -112,6 +120,8 @@ export class Errors {
   }
 }
 
+// models/app/AppState.js
+
 export class AppState {
   /**
    * @type {boolean}
@@ -121,17 +131,12 @@ export class AppState {
   /**
    * @type {boolean}
    */
-  showResizeFields;
+  buttonsDisabled;
 
   /**
    * @type {boolean}
    */
-  currentDimensionsVisible;
-
-  /**
-   * @type {string}
-   */
-  errorMessage;
+  showResizeFields;
 
   /**
    * @type {boolean}
@@ -139,16 +144,15 @@ export class AppState {
   keepAspectRatio;
 
   /**
-   * @type {boolean}
+   * @type {string}
    */
-  buttonsDisabled;
+  errorMessage;
 
   constructor() {
     this.isDownloading = false;
-    this.showResizeFields = false;
-    this.currentDimensionsVisible = false;
-    this.errorMessage = '';
-    this.keepAspectRatio = false;
     this.buttonsDisabled = false;
+    this.showResizeFields = false;
+    this.keepAspectRatio = true;
+    this.errorMessage = '';
   }
 }
