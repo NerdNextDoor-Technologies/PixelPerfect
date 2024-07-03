@@ -135,4 +135,4 @@ export default {
 };
 </script>
 
-<style src="../assets/styles/PdfStyles.css"></style>
+<style src="../assets/styles/DocuementStyles.css"></style>
