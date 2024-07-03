@@ -10,7 +10,7 @@
     </nav>
 
     <div class="content">
-      <div class="upload-container">
+      <div v-if="!isImageLoaded" class="upload-container">
         <div class="drag-drop-area" @drop.prevent="handleFileDrop" @dragover.prevent>
           <label class="upload-label">
             <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading">
@@ -19,10 +19,13 @@
           <p>or drag and drop an image here</p>
         </div>
       </div>
-      <div v-if="imageModelInstance.currentImageSrc && appStateInstance.currentDimensionsVisible">
+
+      <div v-if="isImageLoaded" class="image-details">
+        <p><strong>Selected File:</strong> {{ imageModelInstance.currentFileName }}</p>
         <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
         <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
       </div>
+
       <div v-if="appStateInstance.showResizeFields" class="resize-fields">
         <label for="targetWidth">Width:</label>
         <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')">
@@ -38,7 +41,8 @@
           <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
         </div>
       </div>
-      <div v-else-if="imageModelInstance.currentImageSrc" class="initial-options">
+
+      <div v-else-if="isImageLoaded" class="initial-options">
         <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
         <label for="sizeOptions">Reduce Image Size:</label>
         <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
@@ -55,6 +59,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import { ImageData, Errors, AppState } from '../models/image/ImageModel.js';

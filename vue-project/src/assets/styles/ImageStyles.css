@@ -121,6 +121,7 @@ body {
   justify-content: space-between;
   width: 100%;
   margin-top: 20px;
+  gap: 20px;
 }
 
 .initial-options {
@@ -138,7 +139,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 18px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 button.blurred {

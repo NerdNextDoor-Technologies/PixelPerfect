@@ -16,6 +16,10 @@
         </label>
       </div>
       <div v-if="file" class="resize-fields">
+        <div class="file-info">
+          <p>File Name: {{ file.filename }}</p>
+          <p>File Size: {{ file.size }} KB</p>
+        </div>
         <select v-model="compressionLevel" class="input-width">
           <option value="LOW">Low Compression</option>
           <option value="MEDIUM">Medium Compression</option>
@@ -58,7 +62,8 @@ export default {
       const file = event.target.files[0];
       if (file && file.type === 'application/pdf') {
         const url = window.URL.createObjectURL(file);
-        this.file = { filename: file.name, url };
+        const size = (file.size / 1024).toFixed(2); // Size in KB
+        this.file = { filename: file.name, url, size };
         this.state = CompressionState.FILE_SELECTED;
       } else {
         this.file = null;
@@ -69,7 +74,8 @@ export default {
       const file = event.dataTransfer.files[0];
       if (file && file.type === 'application/pdf') {
         const url = window.URL.createObjectURL(file);
-        this.file = { filename: file.name, url };
+        const size = (file.size / 1024).toFixed(2); // Size in KB
+        this.file = { filename: file.name, url, size };
         this.state = CompressionState.FILE_SELECTED;
       } else {
         this.file = null;
@@ -127,7 +133,6 @@ export default {
     }
   }
 };
-
 </script>
 
 <style src="../assets/styles/PdfStyles.css"></style>

@@ -6,6 +6,12 @@ body {
   font-family: Arial, sans-serif;
 }
 
+.file-info {
+  margin-bottom: 10px;
+  text-align: left;
+  width: 100%;
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
