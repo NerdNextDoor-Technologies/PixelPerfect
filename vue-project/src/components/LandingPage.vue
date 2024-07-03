@@ -3,8 +3,10 @@
     <header class="navbar">
       <a href="#" class="navbar-brand">ConvertEase</a>
       <nav class="navbar-nav">
-        <button class="nav-item nav-link" @click="navigate('ImageConverter')">Image Converter</button>
-        <button class="nav-item nav-link" @click="navigate('PdfConverter')">PDF Converter</button>
+        <ul class="navbar-nav">
+        <li class="nav-item"><a href="#" class="nav-link" @click.prevent="navigate('LandingPage')">Home</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
+      </ul>
       </nav>
     </header>
 
