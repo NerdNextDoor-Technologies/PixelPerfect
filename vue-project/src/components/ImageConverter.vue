@@ -204,4 +204,4 @@ export default {
 </script>
 
 
-<style src="../assets/styles/ImageStyles.css"></style>
+<style scoped src="../assets/styles/ImageStyles.css"></style>

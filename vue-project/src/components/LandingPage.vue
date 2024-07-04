@@ -38,7 +38,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 body {
   display: flex;
   flex-direction: column;
@@ -115,7 +115,7 @@ body {
   padding: 20px;
   box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
 }
 
