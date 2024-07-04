@@ -96,9 +96,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80px 20px 20px;
+  padding: 80px 35px 200px;
   background-color: white;
-  width: 100%;
+  width: 300%;
   max-width: 1200px;
   box-sizing: border-box;
 }
@@ -106,7 +106,7 @@ body {
 .columns {
   display: flex;
   justify-content: space-between;
-  width: 100%;
+  width: 300%;
   max-width: 1200px;
 }
 
