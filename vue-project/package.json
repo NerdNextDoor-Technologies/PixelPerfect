@@ -12,6 +12,8 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@sentry/vite-plugin": "^2.20.1",
+    "@sentry/vue": "^8.15.0",
     "logrocket": "^8.1.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.29",
