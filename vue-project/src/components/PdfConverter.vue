@@ -40,6 +40,7 @@
   </div>
 </template>
 
+
 <script>
 import { compressPDF } from '../helpers/PdfHelper';
 import { PdfData, CompressionState } from '../models/pdf/PdfModel';
