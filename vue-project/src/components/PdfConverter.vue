@@ -40,7 +40,6 @@
   </div>
 </template>
 
-
 <script>
 import { compressPDF } from '../helpers/PdfHelper';
 import { PdfData, CompressionState } from '../models/pdf/PdfModel';
@@ -70,12 +69,10 @@ export default {
           this.file = { filename: file.name, url, size };
           this.state = CompressionState.FILE_SELECTED;
         } else {
-          this.file = null;
-          alert('Please upload a valid PDF file.');
+          this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        console.error('Error handling file change:', error);
-        alert('An error occurred while processing the file.');
+        this.handleError('An error occurred while processing the file.', error);
       }
     },
     onDrop(event) {
@@ -87,12 +84,10 @@ export default {
           this.file = { filename: file.name, url, size };
           this.state = CompressionState.FILE_SELECTED;
         } else {
-          this.file = null;
-          alert('Please upload a valid PDF file.');
+          this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        console.error('Error handling file drop:', error);
-        alert('An error occurred while processing the file.');
+        this.handleError('An error occurred while processing the file.', error);
       }
     },
     async onSubmit(event) {
@@ -103,8 +98,7 @@ export default {
         try {
           await this.beginCompression(url, filename, this.compressionLevel);
         } catch (error) {
-          console.error('Error during compression:', error);
-          alert('An error occurred during compression. Please try again.');
+          this.handleError('An error occurred during compression. Please try again.', error);
           this.state = CompressionState.FILE_SELECTED;
         }
       }
@@ -120,8 +114,8 @@ export default {
           this.showStatusUpdate
         );
       } catch (error) {
-        console.error('Error in beginCompression:', error);
-        throw error; // Rethrow to handle in onSubmit
+        this.handleError('An error occurred while initiating compression.', error);
+        throw error;
       }
     },
     async handleCompressionCompletion(element) {
@@ -131,12 +125,10 @@ export default {
         if (this.isValidUrl(pdfURL)) {
           this.downloadLink = pdfURL;
         } else {
-          console.error('Invalid download link:', pdfURL);
-          this.downloadLink = '';
+          throw new Error('Invalid download link.');
         }
       } catch (error) {
-        console.error('Error completing compression:', error);
-        alert('An error occurred while completing the compression.');
+        this.handleError('An error occurred while completing the compression.', error);
         this.state = CompressionState.FILE_SELECTED;
       }
     },
@@ -150,7 +142,7 @@ export default {
       try {
         return Promise.resolve({ pdfURL: element.pdfDataURL });
       } catch (error) {
-        console.error('Error getting download link:', error);
+        this.handleError('An error occurred while retrieving the download link.', error);
         throw error;
       }
     },
@@ -164,6 +156,14 @@ export default {
     },
     doAnotherConversion() {
       window.location.reload();
+    },
+    resetFileState(message) {
+      this.file = null;
+      alert(message);
+    },
+    handleError(userMessage, error) {
+      console.error(userMessage, error);
+      alert(userMessage);
     }
   }
 };
