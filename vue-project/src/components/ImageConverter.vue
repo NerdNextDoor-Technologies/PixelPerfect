@@ -43,9 +43,9 @@
       </div>
 
       <div v-else-if="isImageLoaded" class="initial-options">
-        <button @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
-        <label for="sizeOptions">Reduce Image Size:</label>
-        <select v-model="selectedSize" @change="reduceSizeImage" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
+        <button class="resize-button" @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
+        <label for="sizeOptions" class="reduce-size-label">Reduce Image Size:</label>
+        <select v-model="selectedSize" @change="reduceSizeImage" class="reduce-size-select" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
           <option value="" disabled>Select a size</option>
           <option value="512000">500 KB</option>
           <option value="1048576">1 MB</option>
@@ -204,4 +204,4 @@ export default {
 </script>
 
 
-<style src="../assets/styles/ImageStyles.css"></style>
+<style scoped src="../assets/styles/ImageStyles.css"></style>

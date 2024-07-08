@@ -11,7 +11,7 @@
       <div v-if="!file" class="upload-container" @dragover.prevent @drop.prevent="onDrop">
         <label class="upload-label">
           <span>Drag and drop your PDF here</span>
-          <span class="button">Upload PDF</span>
+          <span class="button upload">Upload PDF</span>
           <input type="file" @change="onFileChange" />
         </label>
       </div>
@@ -32,7 +32,7 @@
     </form>
     <div v-if="state === 'COMPRESSION_IN_PROGRESS'" class="downloading-message">Compressing...</div>
     <div v-if="state === 'READY_FOR_DOWNLOAD'" class="download-section">
-      <a :href="safeDownloadLink" download="compressed.pdf" class="button">Download Compressed PDF</a>
+      <a :href="safeDownloadLink" download="compressed.pdf" class="button download-messagee">Download Compressed PDF</a>
       <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
     </div>
   </div>
@@ -135,4 +135,4 @@ export default {
 };
 </script>
 
-<style src="../assets/styles/DocuementStyles.css"></style>
+<style scoped src="../assets/styles/DocumentStyles.css"></style>
