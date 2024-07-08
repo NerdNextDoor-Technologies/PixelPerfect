@@ -145,7 +145,7 @@ export default {
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false;
         } catch (error) {
-          this.displayErrorMessage(error.message);
+          this.displayErrorMessage(error.message || "An error occurred while resizing the image."); 
         }
       };
     },
@@ -167,7 +167,7 @@ export default {
           const reducedImageURL = reduceImageToSize(img, parseInt(this.selectedSize));
           this.createDownloadLinkAndTriggerDownload(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
-          this.displayErrorMessage(error.message);
+          this.displayErrorMessage(error.message || "An error occurred while reducing the image size.");
         }
       };
     },
