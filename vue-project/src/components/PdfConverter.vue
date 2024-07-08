@@ -62,57 +62,83 @@ export default {
   },
   methods: {
     onFileChange(event) {
-      const file = event.target.files[0];
-      if (file && file.type === 'application/pdf') {
-        const url = window.URL.createObjectURL(file);
-        const size = (file.size / 1024).toFixed(2); // Size in KB
-        this.file = { filename: file.name, url, size };
-        this.state = CompressionState.FILE_SELECTED;
-      } else {
-        this.file = null;
-        alert('Please upload a valid PDF file.');
+      try {
+        const file = event.target.files[0];
+        if (file && file.type === 'application/pdf') {
+          const url = window.URL.createObjectURL(file);
+          const size = (file.size / 1024).toFixed(2); // Size in KB
+          this.file = { filename: file.name, url, size };
+          this.state = CompressionState.FILE_SELECTED;
+        } else {
+          this.file = null;
+          alert('Please upload a valid PDF file.');
+        }
+      } catch (error) {
+        console.error('Error handling file change:', error);
+        alert('An error occurred while processing the file.');
       }
     },
     onDrop(event) {
-      const file = event.dataTransfer.files[0];
-      if (file && file.type === 'application/pdf') {
-        const url = window.URL.createObjectURL(file);
-        const size = (file.size / 1024).toFixed(2); // Size in KB
-        this.file = { filename: file.name, url, size };
-        this.state = CompressionState.FILE_SELECTED;
-      } else {
-        this.file = null;
-        alert('Please upload a valid PDF file.');
+      try {
+        const file = event.dataTransfer.files[0];
+        if (file && file.type === 'application/pdf') {
+          const url = window.URL.createObjectURL(file);
+          const size = (file.size / 1024).toFixed(2); // Size in KB
+          this.file = { filename: file.name, url, size };
+          this.state = CompressionState.FILE_SELECTED;
+        } else {
+          this.file = null;
+          alert('Please upload a valid PDF file.');
+        }
+      } catch (error) {
+        console.error('Error handling file drop:', error);
+        alert('An error occurred while processing the file.');
       }
     },
-    onSubmit(event) {
+    async onSubmit(event) {
       event.preventDefault();
       if (this.file) {
         const { filename, url } = this.file;
         this.state = CompressionState.COMPRESSION_IN_PROGRESS;
-        this.beginCompression(url, filename, this.compressionLevel);
+        try {
+          await this.beginCompression(url, filename, this.compressionLevel);
+        } catch (error) {
+          console.error('Error during compression:', error);
+          alert('An error occurred during compression. Please try again.');
+          this.state = CompressionState.FILE_SELECTED;
+        }
       }
     },
-    beginCompression(url, filename, compressionLevel) {
-      compressPDF(
-        url,
-        filename,
-        compressionLevel,
-        this.handleCompressionCompletion,
-        this.showProgress,
-        this.showStatusUpdate
-      );
+    async beginCompression(url, filename, compressionLevel) {
+      try {
+        await compressPDF(
+          url,
+          filename,
+          compressionLevel,
+          this.handleCompressionCompletion,
+          this.showProgress,
+          this.showStatusUpdate
+        );
+      } catch (error) {
+        console.error('Error in beginCompression:', error);
+        throw error; // Rethrow to handle in onSubmit
+      }
     },
-    handleCompressionCompletion(element) {
-      this.state = CompressionState.READY_FOR_DOWNLOAD;
-      this.getPdfDownloadLink(element).then(({ pdfURL }) => {
+    async handleCompressionCompletion(element) {
+      try {
+        this.state = CompressionState.READY_FOR_DOWNLOAD;
+        const { pdfURL } = await this.getPdfDownloadLink(element);
         if (this.isValidUrl(pdfURL)) {
           this.downloadLink = pdfURL;
         } else {
           console.error('Invalid download link:', pdfURL);
           this.downloadLink = '';
         }
-      });
+      } catch (error) {
+        console.error('Error completing compression:', error);
+        alert('An error occurred while completing the compression.');
+        this.state = CompressionState.FILE_SELECTED;
+      }
     },
     showProgress(...args) {
       console.log('Compression Progress:', JSON.stringify(args));
@@ -120,8 +146,13 @@ export default {
     showStatusUpdate(element) {
       console.log('Compression Status Update:', JSON.stringify(element));
     },
-    getPdfDownloadLink(element) {
-      return Promise.resolve({ pdfURL: element.pdfDataURL });
+    async getPdfDownloadLink(element) {
+      try {
+        return Promise.resolve({ pdfURL: element.pdfDataURL });
+      } catch (error) {
+        console.error('Error getting download link:', error);
+        throw error;
+      }
     },
     isValidUrl(url) {
       try {
