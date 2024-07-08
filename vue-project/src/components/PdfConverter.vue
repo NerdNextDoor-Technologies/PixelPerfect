@@ -32,11 +32,14 @@
     </form>
     <div v-if="state === 'COMPRESSION_IN_PROGRESS'" class="downloading-message">Compressing...</div>
     <div v-if="state === 'READY_FOR_DOWNLOAD'" class="download-section">
-      <a :href="safeDownloadLink" download="compressed.pdf" class="button download-messagee">Download Compressed PDF</a>
-      <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
+      <div class="adjacent-container">
+        <a :href="safeDownloadLink" download="compressed.pdf" class="button download-messagee">Download Compressed PDF</a>
+        <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
+      </div>
     </div>
   </div>
 </template>
+
 
 <script>
 import { compressPDF } from '../helpers/PdfHelper';
