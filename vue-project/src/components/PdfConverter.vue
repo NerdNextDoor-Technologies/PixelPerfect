@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { compressPDF } from '../helpers/PdfHelper';
+import { compressPDF, handleDetailedError } from '../helpers/PdfHelper';
 import { PdfData, CompressionState } from '../models/pdf/PdfModel';
 
 export default {
@@ -72,7 +72,7 @@ export default {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        this.handleError('An error occurred while processing the file.', error);
+        handleDetailedError(error, 'pdfconverter.vue');
       }
     },
     onDrop(event) {
@@ -87,7 +87,7 @@ export default {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        this.handleError('An error occurred while processing the file.', error);
+        handleDetailedError(error, 'pdfconverter.vue');
       }
     },
     async onSubmit(event) {
@@ -98,7 +98,7 @@ export default {
         try {
           await this.beginCompression(url, filename, this.compressionLevel);
         } catch (error) {
-          this.handleError('An error occurred during compression. Please try again.', error);
+          handleDetailedError(error, 'pdfconverter.vue');
           this.state = CompressionState.FILE_SELECTED;
         }
       }
@@ -114,7 +114,7 @@ export default {
           this.showStatusUpdate
         );
       } catch (error) {
-        this.handleError('An error occurred while initiating compression.', error);
+        handleDetailedError(error, 'pdfconverter.vue');
         throw error;
       }
     },
@@ -128,7 +128,7 @@ export default {
           throw new Error('Invalid download link.');
         }
       } catch (error) {
-        this.handleError('An error occurred while completing the compression.', error);
+        handleDetailedError(error, 'pdfconverter.vue');
         this.state = CompressionState.FILE_SELECTED;
       }
     },
@@ -142,7 +142,7 @@ export default {
       try {
         return Promise.resolve({ pdfURL: element.pdfDataURL });
       } catch (error) {
-        this.handleError('An error occurred while retrieving the download link.', error);
+        handleDetailedError(error, 'pdfconverter.vue');
         throw error;
       }
     },
@@ -160,10 +160,6 @@ export default {
     resetFileState(message) {
       this.file = null;
       alert(message);
-    },
-    handleError(userMessage, error) {
-      console.error(userMessage, error);
-      alert(userMessage);
     }
   }
 };
