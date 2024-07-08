@@ -6,7 +6,7 @@ import router from './router';
 import LogRocket from 'logrocket';
 import * as Sentry from "@sentry/vue";
 
-LogRocket.init('5sgire/nerdnextdoor');
+LogRocket.init('5sgire/pixelperfect');
 
 
 const app = createApp(App);
