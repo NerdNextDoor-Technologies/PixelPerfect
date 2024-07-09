@@ -20,6 +20,9 @@
           <p>File Name: {{ file.filename }}</p>
           <p>File Size: {{ file.size }} KB</p>
         </div>
+        <div v-if="approxTargetSize" class="approx-size">
+          <p>Approx. Compressed Size of a Page: {{ approxTargetSize }} KB</p>
+        </div>
         <select v-model="compressionLevel" class="input-width">
           <option value="LOW">Low Compression</option>
           <option value="MEDIUM">Medium Compression</option>
@@ -33,7 +36,7 @@
     <div v-if="state === 'COMPRESSION_IN_PROGRESS'" class="downloading-message">Compressing...</div>
     <div v-if="state === 'READY_FOR_DOWNLOAD'" class="download-section">
       <div class="adjacent-container">
-        <a :href="safeDownloadLink" download="compressed.pdf" class="button download-messagee">Download Compressed PDF</a>
+        <a :href="safeDownloadLink" download="compressed.pdf" class="button download-message">Download Compressed PDF</a>
         <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
       </div>
     </div>
@@ -43,6 +46,7 @@
 <script>
 import { compressPDF } from '../helpers/PdfHelper';
 import { PdfData, CompressionState } from '../models/pdf/PdfModel';
+import { PDFDocument } from 'pdf-lib';
 
 export default {
   data() {
@@ -51,7 +55,8 @@ export default {
       state: uploadedPdf.filestate,
       file: uploadedPdf.selectedFileMetadata,
       downloadLink: uploadedPdf.downloadLink,
-      compressionLevel: uploadedPdf.compressionLevel
+      compressionLevel: uploadedPdf.compressionLevel,
+      approxTargetSize: null
     };
   },
   computed: {
@@ -60,7 +65,7 @@ export default {
     }
   },
   methods: {
-    onFileChange(event) {
+    async onFileChange(event) {
       try {
         const file = event.target.files[0];
         if (file && file.type === 'application/pdf') {
@@ -68,6 +73,7 @@ export default {
           const size = (file.size / 1024).toFixed(2); // Size in KB
           this.file = { filename: file.name, url, size };
           this.state = CompressionState.FILE_SELECTED;
+          await this.compressSinglePage(file);
         } else {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
@@ -75,7 +81,7 @@ export default {
         this.handleError('An error occurred while processing the file.', error);
       }
     },
-    onDrop(event) {
+    async onDrop(event) {
       try {
         const file = event.dataTransfer.files[0];
         if (file && file.type === 'application/pdf') {
@@ -83,12 +89,57 @@ export default {
           const size = (file.size / 1024).toFixed(2); // Size in KB
           this.file = { filename: file.name, url, size };
           this.state = CompressionState.FILE_SELECTED;
+          await this.compressSinglePage(file);
         } else {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
         this.handleError('An error occurred while processing the file.', error);
       }
+    },
+    async compressSinglePage(file) {
+  try {
+    // Load the original PDF document
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    
+    // Select a random page
+    const numPages = pdfDoc.getPageCount();
+    const randomPageIndex = Math.floor(Math.random() * numPages);
+
+    // Copy the random page to a new PDF document
+    const singlePagePdfDoc = await PDFDocument.create();
+    const [copiedPage] = await singlePagePdfDoc.copyPages(pdfDoc, [randomPageIndex]);
+    singlePagePdfDoc.addPage(copiedPage);
+
+    // Save the single-page PDF to bytes
+    const singlePagePdfBytes = await singlePagePdfDoc.save();
+    
+    // Create a blob and a URL for the single-page PDF
+    const singlePageBlob = new Blob([singlePagePdfBytes], { type: 'application/pdf' });
+    const singlePageUrl = window.URL.createObjectURL(singlePageBlob);
+    
+    // Compress the single-page PDF and get its size
+    const compressedSinglePage = await this.compressAndFetchSize(singlePageUrl);
+    this.approxTargetSize = (compressedSinglePage.size / 1024).toFixed(2); // Size in KB
+  } catch (error) {
+    this.handleError('An error occurred while compressing a single page.', error);
+  }
+}
+
+,
+    async compressAndFetchSize(singlePageUrl) {
+      return new Promise((resolve, reject) => {
+        compressPDF(singlePageUrl, 'singlePage.pdf', 'HIGH',this.handleCompressionCompletion,this.showProgress,this.showStatusUpdate, (response) => {
+          const { pdfDataURL } = response;
+          fetch(pdfDataURL)
+            .then((res) => res.blob())
+            .then((blob) => {
+              resolve(blob);
+            })
+            .catch(reject);
+        });
+      });
     },
     async onSubmit(event) {
       event.preventDefault();
