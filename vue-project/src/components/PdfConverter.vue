@@ -61,28 +61,21 @@ export default {
   },
   methods: {
     onFileChange(event) {
-      try {
-        const file = event.target.files[0];
-        if (file && file.type === 'application/pdf') {
-          const url = window.URL.createObjectURL(file);
-          const size = (file.size / 1024).toFixed(2); // Size in KB
-          this.file = { filename: file.name, url, size };
-          this.state = CompressionState.FILE_SELECTED;
-        } else {
-          this.resetFileState('Invalid file type. Please upload a PDF file.');
-        }
-      } catch (error) {
-        this.handleError('An error occurred while processing the file.', error);
-      }
+      const file = event.target.files[0];
+      this.handleFile(file);
     },
     onDrop(event) {
+      const file = event.dataTransfer.files[0];
+      this.handleFile(file);
+    },
+    handleFile(file) {
       try {
-        const file = event.dataTransfer.files[0];
         if (file && file.type === 'application/pdf') {
           const url = window.URL.createObjectURL(file);
           const size = (file.size / 1024).toFixed(2); // Size in KB
           this.file = { filename: file.name, url, size };
           this.state = CompressionState.FILE_SELECTED;
+          this.storeFileInLocalStorage(file);
         } else {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
@@ -155,6 +148,7 @@ export default {
       }
     },
     doAnotherConversion() {
+      localStorage.setItem('doAnotherConversion', 'true');
       window.location.reload();
     },
     resetFileState(message) {
@@ -164,9 +158,38 @@ export default {
     handleError(userMessage, error) {
       console.error(userMessage, error);
       alert(userMessage);
+    },
+    storeFileInLocalStorage(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const fileData = reader.result;
+        localStorage.setItem('uploadedFile', JSON.stringify({
+          filename: file.name,
+          data: fileData,
+          size: (file.size / 1024).toFixed(2)
+        }));
+      };
+      reader.readAsDataURL(file);
+    },
+    loadFileFromLocalStorage() {
+      const storedFile = localStorage.getItem('uploadedFile');
+      const doAnotherConversion = localStorage.getItem('doAnotherConversion');
+      if (storedFile && doAnotherConversion === 'true') {
+        const { filename, data, size } = JSON.parse(storedFile);
+        this.file = { filename, url: data, size };
+        this.state = CompressionState.FILE_SELECTED;
+      } else {
+        localStorage.removeItem('uploadedFile');
+        localStorage.removeItem('doAnotherConversion');
+      }
     }
+  },
+  mounted() {
+    this.loadFileFromLocalStorage();
   }
 };
 </script>
+
+
 
 <style scoped src="../assets/styles/DocumentStyles.css"></style>

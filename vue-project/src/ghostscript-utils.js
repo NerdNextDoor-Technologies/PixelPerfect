@@ -1,10 +1,13 @@
 export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, statusUpdateCallback, compressionLevel) {
+    // Clear any existing Ghostscript module
+    if (window.Module) {
+        delete window.Module;
+    }
+
     var xhr = new XMLHttpRequest();
     xhr.open("GET", dataStruct.psDataURL);
     xhr.responseType = "arraybuffer";
     xhr.onload = function () {
-        window.URL.revokeObjectURL(dataStruct.psDataURL);
-
         let gsArguments;
         switch (compressionLevel) {
             case 'HIGH':
