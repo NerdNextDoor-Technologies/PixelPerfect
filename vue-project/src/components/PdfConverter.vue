@@ -175,6 +175,7 @@ export default {
       const storedFile = localStorage.getItem('uploadedFile');
       const doAnotherConversion = localStorage.getItem('doAnotherConversion');
       if (storedFile && doAnotherConversion === 'true') {
+        localStorage.setItem('doAnotherConversion', 'false');
         const { filename, data, size } = JSON.parse(storedFile);
         this.file = { filename, url: data, size };
         this.state = CompressionState.FILE_SELECTED;
