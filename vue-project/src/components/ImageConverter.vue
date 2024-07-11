@@ -4,7 +4,7 @@
     <nav class="navbar">
       <a href="#" class="navbar-brand">Image App</a>
       <ul class="navbar-nav">
-        <li class="nav-item"><a href="#" class="nav-link" @click.prevent="navigate('LandingPage')">Home</a></li>
+        <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
         <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
       </ul>
     </nav>

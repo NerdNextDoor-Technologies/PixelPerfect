@@ -3,7 +3,7 @@
     <nav class="navbar">
       <a href="#" class="navbar-brand">PDF Compressor</a>
       <ul class="navbar-nav">
-        <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
         <li class="nav-item"><a href="#" class="nav-link">About</a></li>
       </ul>
     </nav>
@@ -41,8 +41,9 @@
 </template>
 
 <script>
-import { compressPDF, handleDetailedError } from '../helpers/PdfHelper';
+import { compressPDF } from '../helpers/PdfHelper';
 import { PdfData, CompressionState } from '../models/pdf/PdfModel';
+import { printErrorOnConsole } from '../helpers/Error/PrintError';
 
 export default {
   data() {
@@ -72,7 +73,7 @@ export default {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        handleDetailedError(error, 'pdfconverter.vue');
+        printErrorOnConsole(error, 'pdfconverter.vue');
       }
     },
     onDrop(event) {
@@ -87,7 +88,7 @@ export default {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        handleDetailedError(error, 'pdfconverter.vue');
+        printErrorOnConsole(error, 'pdfconverter.vue');
       }
     },
     async onSubmit(event) {
@@ -98,7 +99,7 @@ export default {
         try {
           await this.beginCompression(url, filename, this.compressionLevel);
         } catch (error) {
-          handleDetailedError(error, 'pdfconverter.vue');
+          printErrorOnConsole(error, 'pdfconverter.vue');
           this.state = CompressionState.FILE_SELECTED;
         }
       }
@@ -114,7 +115,7 @@ export default {
           this.showStatusUpdate
         );
       } catch (error) {
-        handleDetailedError(error, 'pdfconverter.vue');
+        printErrorOnConsole(error, 'pdfconverter.vue');
         throw error;
       }
     },
@@ -128,7 +129,7 @@ export default {
           throw new Error('Invalid download link.');
         }
       } catch (error) {
-        handleDetailedError(error, 'pdfconverter.vue');
+        printErrorOnConsole(error, 'pdfconverter.vue');
         this.state = CompressionState.FILE_SELECTED;
       }
     },
@@ -142,7 +143,7 @@ export default {
       try {
         return Promise.resolve({ pdfURL: element.pdfDataURL });
       } catch (error) {
-        handleDetailedError(error, 'pdfconverter.vue');
+        printErrorOnConsole(error, 'pdfconverter.vue');
         throw error;
       }
     },

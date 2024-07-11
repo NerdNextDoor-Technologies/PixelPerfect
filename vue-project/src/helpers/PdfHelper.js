@@ -1,12 +1,7 @@
 // src/helpers/PdfHelper.js
 
 import { _GSPS2PDF } from '../ghostscript-utils';
-
-function handleDetailedError(error, fileName) {
-  console.error(`Error in ${fileName}:`, error.message);
-  console.error(`Stack trace:`, error.stack);
-  alert(`An error occurred in ${fileName}: ${error.message}`);
-}
+import { printErrorOnConsole } from './Error/PrintError';
 
 function compressPDF(pdf, filename, compressionLevel, onLoadComplete, onProgress, onStatusUpdate) {
   const dataObject = { psDataURL: pdf };
@@ -20,9 +15,9 @@ function compressPDF(pdf, filename, compressionLevel, onLoadComplete, onProgress
       compressionLevel
     );
   } catch (error) {
-    handleDetailedError(error, 'PdfHelper.js');
+    printErrorOnConsole(error, 'PdfHelper.js');
     throw error;
   }
 }
 
-export { compressPDF, handleDetailedError };
+export { compressPDF };
