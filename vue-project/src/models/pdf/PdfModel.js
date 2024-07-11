@@ -1,3 +1,5 @@
+import { CompressionLevel } from "@/assets/constants/compression_level";
+
 //FIXME Rename states to something relevant
 const CompressionState = {
   NO_FILE_SELECTED: 'NO_FILE_SELECTED',
@@ -18,8 +20,8 @@ class PdfData {
     /** @type {URL} */
     this.downloadLink = '';
 
-    /** @type {'LOW' | 'MEDIUM' | 'HIGH'} */
-    this.compressionLevel = 'LOW';
+    /** @type { CompressionLevel.LOW | CompressionLevel.MEDIUM | CompressionLevel.HIGH} */
+    this.compressionLevel = CompressionLevel.LOW;
   }
 }
 
