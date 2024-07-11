@@ -1,4 +1,4 @@
-import { CompressionLevel } from "./assets/constants/compression_level";
+import { COMPRESSIONLEVEL } from "./models/enum/COMPRESSIONLEVEL";
 
 
 export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, statusUpdateCallback, compressionLevel) {
@@ -10,7 +10,7 @@ export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, status
 
         let gsArguments;
         switch (compressionLevel) {
-            case compressionLevel.HIGH:
+            case COMPRESSIONLEVEL.HIGH:
                 gsArguments = [
                     '-sDEVICE=pdfwrite',
                     '-dCompatibilityLevel=1.4',
@@ -31,7 +31,7 @@ export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, status
                     '-dMonoImageResolution=72'
                 ];
                 break;
-            case CompressionLevel.MEDIUM:
+            case COMPRESSIONLEVEL.MEDIUM:
                 gsArguments = [
                     '-sDEVICE=pdfwrite',
                     '-dCompatibilityLevel=1.4',
@@ -52,7 +52,7 @@ export function _GSPS2PDF(dataStruct, responseCallback, progressCallback, status
                     '-dMonoImageResolution=100'
                 ];
                 break;
-            case CompressionLevel.LOW:
+            case COMPRESSIONLEVEL.LOW:
                 gsArguments = [
                     '-sDEVICE=pdfwrite',
                     '-dCompatibilityLevel=1.4',
