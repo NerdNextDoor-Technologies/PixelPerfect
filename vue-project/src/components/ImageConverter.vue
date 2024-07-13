@@ -62,8 +62,10 @@
 
 
 <script>
-import { ImageData, Errors, AppState, ImageResolution } from '../models/image/ImageModel.js';
+import { ImageData, ImageResolution } from '../models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from '../helpers/ImageHelper.js';
+import { AppState } from '@/models/app/AppState.js';
+import { Errors } from '@/models/image/ImageDimensionsErrorMessage.js';
 
 export default {
   data() {
@@ -90,13 +92,14 @@ export default {
         this.displayErrorMessage("No file selected.");
         return;
       }
-      this.imageModelInstance.loadImage(file, this.displayErrorMessage.bind(this));
+      this.imageModelInstance.loadImage(file, this.displayErrorMessage.bind(this), this.updateState.bind(this));
       this.updateState(true, false);
     },
     handleFileDrop(event) {
       const files = event.dataTransfer.files;
       if (files.length > 0) {
-        this.imageModelInstance.loadImage(files[0], this.displayErrorMessage.bind(this), this.updateState.bind(this));
+        this.imageModelInstance.loadImage(files[0], this.displayErrorMessage.bind(this));
+        this.updateState(true, false);
       }
     },
     updateState(currentDimensionsVisible, buttonsDisabled) {
@@ -153,11 +156,6 @@ export default {
       const img = new Image();
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
-        const targetWidth = img.width;
-        const targetHeight = img.height;
-
-        this.imageModelInstance.validateResolution(targetWidth, targetHeight, this.displayErrorMessage.bind(this));
-        if (!this.imageModelInstance.isValid) return;
 
         try {
           const reducedImageURL = reduceImageToSize(img, parseInt(this.selectedSize));

@@ -1,5 +1,5 @@
 // models/image/ImageModel.js
-
+import { LogError } from '@/helpers/LogHelper/LogError';
 export class ImageData {
   /**
    * @type {number}
@@ -50,7 +50,7 @@ export class ImageData {
     }
   }
 
-  loadImage(file, displayError) {
+  loadImage(file) {
     this.currentFileSize = file.size;
     this.currentFileName = file.name;
     const reader = new FileReader();
@@ -63,50 +63,21 @@ export class ImageData {
         try {
           new ImageResolution(this.currentWidth, this.currentHeight); // Validate the image resolution
         } catch (error) {
-          displayError(error.message);
+          LogError(error, this.currentFileName);
           return;
         }
       };
       img.onerror = () => {
-        displayError("Invalid image file.");
+        LogError(new Error("Invalid image file."), this.currentFileName);
       };
       img.src = e.target.result;
     };
     reader.onerror = () => {
-      displayError("Error reading file.");
+      LogError(new Error("Error reading file."), this.currentFileName);
     };
     reader.readAsDataURL(file);
   }
-
-  validateResolution(targetWidth, targetHeight, displayError) {
-    this.isValid = true;
-    this.errorMessage = '';
-
-    if (!Number.isInteger(targetWidth) || !Number.isInteger(targetHeight)) {
-      this.isValid = false;
-      this.errorMessage = "Width and height must be integers.";
-      displayError(this.errorMessage);
-    } else if (targetWidth <= 0 || targetHeight <= 0) {
-      this.isValid = false;
-      this.errorMessage = "Width and height must be positive values.";
-      displayError(this.errorMessage);
-    } else if (targetWidth > this.currentWidth || targetHeight > this.currentHeight) {
-      this.isValid = false;
-      this.errorMessage = "Target dimensions must be less than or equal to current dimensions.";
-      displayError(this.errorMessage);
-    }
-
-    if (this.isValid) {
-      this.targetWidth = targetWidth;
-      this.targetHeight = targetHeight;
-    }
-  }
-
-  displayError(message) {
-    console.error(message);
-  }
 }
-
 export class ImageResolution {
   /**
    * @param {number} width
@@ -131,57 +102,3 @@ export class ImageResolution {
   }
 }
 
-
-export class Errors {
-  /**
-   * @type {string}
-   */
-  width;
-
-  /**
-   * @type {string}
-   */
-  height;
-
-  constructor() {
-    this.width = '';
-    this.height = '';
-  }
-}
-
-// models/app/AppState.js
-
-export class AppState {
-  /**
-   * @type {boolean}
-   */
-  isDownloading;
-
-  /**
-   * @type {boolean}
-   */
-  buttonsDisabled;
-
-  /**
-   * @type {boolean}
-   */
-  showResizeFields;
-
-  /**
-   * @type {boolean}
-   */
-  keepAspectRatio;
-
-  /**
-   * @type {string}
-   */
-  errorMessage;
-
-  constructor() {
-    this.isDownloading = false;
-    this.buttonsDisabled = false;
-    this.showResizeFields = false;
-    this.keepAspectRatio = true;
-    this.errorMessage = '';
-  }
-}
