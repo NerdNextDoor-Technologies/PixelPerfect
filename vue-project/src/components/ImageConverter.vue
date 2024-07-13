@@ -62,7 +62,7 @@
 
 
 <script>
-import { ImageData, Errors, AppState } from '../models/image/ImageModel.js';
+import { ImageData, Errors, AppState, ImageResolution } from '../models/image/ImageModel.js';
 import { resizeImage, reduceImageToSize } from '../helpers/ImageHelper.js';
 
 export default {
@@ -90,7 +90,8 @@ export default {
         this.displayErrorMessage("No file selected.");
         return;
       }
-      this.imageModelInstance.loadImage(file, this.displayErrorMessage.bind(this), this.updateState.bind(this));
+      this.imageModelInstance.loadImage(file, this.displayErrorMessage.bind(this));
+      this.updateState(true, false);
     },
     handleFileDrop(event) {
       const files = event.dataTransfer.files;
@@ -134,18 +135,13 @@ export default {
       const img = new Image();
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
-        const targetWidth = this.imageModelInstance.targetWidth || img.width;
-        const targetHeight = this.imageModelInstance.targetHeight || (img.height / img.width) * targetWidth;
-
-        this.imageModelInstance.validateResolution(targetWidth, targetHeight, this.displayErrorMessage.bind(this));
-        if (!this.imageModelInstance.isValid) return;
-
         try {
-          const resizedImageURL = resizeImage(img, this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
+          const targetimageResolution = new ImageResolution(this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
+          const resizedImageURL = resizeImage(img, targetimageResolution);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false;
         } catch (error) {
-          this.displayErrorMessage(error.message || "An error occurred while resizing the image."); 
+          this.displayErrorMessage(error.message);
         }
       };
     },
