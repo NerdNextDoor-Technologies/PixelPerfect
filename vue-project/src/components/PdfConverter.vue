@@ -43,7 +43,7 @@
 <script>
 import { compressPDF } from '../helpers/PdfHelper';
 import { PdfData, CompressionState } from '../models/pdf/PdfModel';
-import { printErrorOnConsole } from '../helpers/Error/PrintError';
+import { LogError } from '../helpers/Error/LogHelper';
 
 export default {
   data() {
@@ -73,7 +73,7 @@ export default {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        printErrorOnConsole(error, 'pdfconverter.vue');
+        LogError(error, 'pdfconverter.vue');
       }
     },
     onDrop(event) {
@@ -88,7 +88,7 @@ export default {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        printErrorOnConsole(error, 'pdfconverter.vue');
+        LogError(error, 'pdfconverter.vue');
       }
     },
     async onSubmit(event) {
@@ -99,7 +99,7 @@ export default {
         try {
           await this.beginCompression(url, filename, this.compressionLevel);
         } catch (error) {
-          printErrorOnConsole(error, 'pdfconverter.vue');
+          LogError(error, 'pdfconverter.vue');
           this.state = CompressionState.FILE_SELECTED;
         }
       }
@@ -115,7 +115,7 @@ export default {
           this.showStatusUpdate
         );
       } catch (error) {
-        printErrorOnConsole(error, 'pdfconverter.vue');
+        LogError(error, 'pdfconverter.vue');
         throw error;
       }
     },
@@ -129,7 +129,7 @@ export default {
           throw new Error('Invalid download link.');
         }
       } catch (error) {
-        printErrorOnConsole(error, 'pdfconverter.vue');
+        LogError(error, 'pdfconverter.vue');
         this.state = CompressionState.FILE_SELECTED;
       }
     },
@@ -143,7 +143,7 @@ export default {
       try {
         return Promise.resolve({ pdfURL: element.pdfDataURL });
       } catch (error) {
-        printErrorOnConsole(error, 'pdfconverter.vue');
+        LogError(error, 'pdfconverter.vue');
         throw error;
       }
     },
