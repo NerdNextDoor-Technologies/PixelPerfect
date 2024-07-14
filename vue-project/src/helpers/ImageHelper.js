@@ -15,31 +15,45 @@ export function resizeImage(img, imageResolution) {
   return canvas.toDataURL('image/jpeg');
 }
 
-export function reduceImageToSize(image, targetSize) {
+export function resizeImage1(img, width, height, quality = 1.0) {
   const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
-
-  let quality = 0.9;
-  let resultSize = targetSize + 1; // Initial size for the loop condition
-  let dataURL = '';
-
-  canvas.width = image.width;
-  canvas.height = image.height;
-
-  while (resultSize > targetSize) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-    dataURL = canvas.toDataURL('image/jpeg', quality);
-    resultSize = dataURL.length * (3 / 4);
-
-    quality -= 0.1;
-    if (quality < 0.1) break; // Prevent infinite loop
-  }
-
-  return dataURL;
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL('image/jpeg', quality);
 }
 
+
+export function reduceImageToSize(image, targetSizeInBytes) {
+  const minimumTargetSizeInPixels = { width: 50, height: 50 }; // Minimum allowable dimensions to avoid too much reduction
+  let qualityFactor = 1.0;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const reductionRatio = Math.sqrt(targetSizeInBytes / (image.src.length * 3 / 4));
+    let targetWidth = Math.round(image.width * reductionRatio);
+    let targetHeight = Math.round(image.height * reductionRatio);
+
+    while (targetWidth > minimumTargetSizeInPixels.width && targetHeight > minimumTargetSizeInPixels.height) {
+      const resizedImage = resizeImage1(image, targetWidth, targetHeight, qualityFactor);
+      const resizedImageSizeInBytes = resizedImage.length * 3 / 4;
+
+      if (resizedImageSizeInBytes <= targetSizeInBytes) {
+        return resizedImage;
+      }
+
+      // Reduce the target dimensions by 10%
+      targetWidth = Math.round(targetWidth * 0.9);
+      targetHeight = Math.round(targetHeight * 0.9);
+    }
+
+    qualityFactor -= 0.1;
+    if (qualityFactor <= 0.5) {
+      throw new Error("Unable to convert file, target size too small");
+    }
+  }
+}
 //FIXME Rename targetSize to targetSizeInBytes
 //FIXME Rename image to imageElement
 //FIXME Rename dataURL to resizedImage

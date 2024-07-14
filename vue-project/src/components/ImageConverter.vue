@@ -4,7 +4,7 @@
     <nav class="navbar">
       <a href="#" class="navbar-brand">Image App</a>
       <ul class="navbar-nav">
-        <li class="nav-item"><a href="#" class="nav-link" @click.prevent="navigate('LandingPage')">Home</a></li>
+        <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
         <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
       </ul>
     </nav>
@@ -92,13 +92,13 @@ export default {
         this.displayErrorMessage("No file selected.");
         return;
       }
-      this.imageModelInstance.loadImage(file, this.displayErrorMessage.bind(this), this.updateState.bind(this));
+      this.imageModelInstance.loadImage(file);
       this.updateState(true, false);
     },
     handleFileDrop(event) {
       const files = event.dataTransfer.files;
       if (files.length > 0) {
-        this.imageModelInstance.loadImage(files[0], this.displayErrorMessage.bind(this));
+        this.imageModelInstance.loadImage(files[0]);
         this.updateState(true, false);
       }
     },

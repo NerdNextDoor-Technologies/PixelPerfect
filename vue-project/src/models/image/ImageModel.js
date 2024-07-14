@@ -36,7 +36,7 @@ export class ImageData {
    */
   currentFileName;
 
-  constructor(file = null) {
+  constructor(file) {
     this.currentWidth = 0;
     this.currentHeight = 0;
     this.targetWidth = 0;
