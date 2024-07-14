@@ -1,4 +1,4 @@
-import { ImageResolution } from "@/models/image/ImageModel";
+
 //TODO Add Data types to the functions
 //FIXME rename img to imageElement
 //FIXME rename targetWidth to targetWidthInPixels
@@ -6,47 +6,49 @@ import { ImageResolution } from "@/models/image/ImageModel";
 //FIXME combine targetHeight and targetWidth into one object targetSizeInPixels
 //FIXME rename canvas to canvasElement
 //FIXME rename ctx to canvasContext
-export function resizeImage(img, imageResolution, quality = 1.0) {
+export function resizeImage(img, imageResolution) {
   const canvas = document.createElement('canvas');
   canvas.width = imageResolution.width;
   canvas.height = imageResolution.height;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(img, 0, 0, imageResolution.width, imageResolution.height);
+  return canvas.toDataURL('image/jpeg');
+}
+
+export function resizeImage1(img, width, height, quality = 1.0) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, width, height);
   return canvas.toDataURL('image/jpeg', quality);
 }
 
 
+
 export function reduceImageToSize(image, targetSizeInBytes) {
   const minimumTargetSizeInPixels = { width: 50, height: 50 }; // Minimum allowable dimensions to avoid too much reduction
-  let qualityFactor = 1.0;  // Start with the highest quality
+  let qualityFactor = 1.0;
 
-  // Loop until the image is resized to the target size or lower quality limit is reached
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    // Calculate initial reduction ratio based on target size and current image size
     const reductionRatio = Math.sqrt(targetSizeInBytes / (image.src.length * 3 / 4));
     let targetWidth = Math.round(image.width * reductionRatio);
     let targetHeight = Math.round(image.height * reductionRatio);
 
-    const targetResolution = new ImageResolution(targetWidth, targetHeight);
-
-    // Inner loop to adjust dimensions while they are above the minimum allowable size
     while (targetWidth > minimumTargetSizeInPixels.width && targetHeight > minimumTargetSizeInPixels.height) {
-      const resizedImage = resizeImage(image, targetResolution, qualityFactor);
+      const resizedImage = resizeImage1(image, targetWidth, targetHeight, qualityFactor);
       const resizedImageSizeInBytes = resizedImage.length * 3 / 4;
 
-      // Check if resized image meets the target size requirement
       if (resizedImageSizeInBytes <= targetSizeInBytes) {
         return resizedImage;
       }
 
-      // Reduce the target dimensions by 10% for the next iteration
+      // Reduce the target dimensions by 10%
       targetWidth = Math.round(targetWidth * 0.9);
       targetHeight = Math.round(targetHeight * 0.9);
     }
 
-
-    // Reduce quality factor for the next iteration if dimensions adjustment fails
     qualityFactor -= 0.1;
     if (qualityFactor <= 0.5) {
       throw new Error("Unable to convert file, target size too small");
