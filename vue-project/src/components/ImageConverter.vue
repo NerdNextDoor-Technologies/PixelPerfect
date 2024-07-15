@@ -22,7 +22,7 @@
 
       <div v-if="isImageLoaded" class="image-details">
         <p><strong>Selected File:</strong> {{ imageModelInstance.currentFileName }}</p>
-        <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
+        <p>Current Dimensions: <span>{{ imageModelInstance.resolution.width }}</span> x <span>{{ imageModelInstance.resolution.height }}</span></p>
         <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
       </div>
 
@@ -60,13 +60,12 @@
   </div>
 </template>
 
-
 <script>
-import { ImageData } from '../models/image/ImageModel.js';
+import { ImageData } from '@/models/image/ImageModel';
+import { resizeImageByResolution, resizedImageByFileSize } from '../helpers/ImageHelper';
+import { AppState } from '@/models/app/AppState';
+import { Errors } from '@/models/image/ImageDimensionsErrorMessage';
 import { ImageResolution } from '@/models/image/ImageResolution.js';
-import { resizeImageByResolution, resizedImageByFileSize } from '../helpers/ImageHelper.ts';
-import { AppState } from '@/models/app/AppState.js';
-import { Errors } from '@/models/image/ImageDimensionsErrorMessage.js';
 
 export default {
   data() {
@@ -99,7 +98,7 @@ export default {
     handleFileDrop(event) {
       const files = event.dataTransfer.files;
       if (files.length > 0) {
-        this.imageModelInstance.loadImage(files[0]);
+        this.imageModelInstance = new ImageData(files[0]);
         this.updateState(true, false);
       }
     },
@@ -118,13 +117,13 @@ export default {
       }
     },
     keepAspectRatio(dimension) {
-      if (!this.appStateInstance.keepAspectRatio || !this.imageModelInstance.currentWidth || !this.imageModelInstance.currentHeight) return;
+      if (!this.appStateInstance.keepAspectRatio || !this.imageModelInstance.resolution.width || !this.imageModelInstance.resolution.height) return;
 
       if (dimension === 'width') {
-        const aspectRatio = this.imageModelInstance.currentHeight / this.imageModelInstance.currentWidth;
+        const aspectRatio = this.imageModelInstance.resolution.height / this.imageModelInstance.resolution.width;
         this.imageModelInstance.targetHeight = Math.round(this.imageModelInstance.targetWidth * aspectRatio);
       } else if (dimension === 'height') {
-        const aspectRatio = this.imageModelInstance.currentWidth / this.imageModelInstance.currentHeight;
+        const aspectRatio = this.imageModelInstance.resolution.width / this.imageModelInstance.resolution.height;
         this.imageModelInstance.targetWidth = Math.round(this.imageModelInstance.targetHeight * aspectRatio);
       }
     },
@@ -140,8 +139,8 @@ export default {
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
         try {
-          const targetimageResolution = new ImageResolution(this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
-          const resizedImageURL = resizeImageByResolution(img, targetimageResolution);
+          const targetResolution = new ImageResolution(this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
+          const resizedImageURL = resizeImageByResolution(img, targetResolution);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false;
         } catch (error) {
@@ -157,7 +156,6 @@ export default {
       const img = new Image();
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
-
         try {
           const reducedImageURL = resizedImageByFileSize(img, parseInt(this.selectedSize));
           this.createDownloadLinkAndTriggerDownload(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
@@ -184,8 +182,8 @@ export default {
     },
     resetImageForm() {
       this.appStateInstance.showResizeFields = false;
-      this.imageModelInstance.targetWidth = null;
-      this.imageModelInstance.targetHeight = null;
+      this.targetWidth = null;
+      this.targetHeight = null;
       this.appStateInstance.errorMessage = '';
       this.appStateInstance.currentDimensionsVisible = true;
       this.appStateInstance.buttonsDisabled = false;
@@ -197,6 +195,5 @@ export default {
   },
 };
 </script>
-
 
 <style scoped src="../assets/styles/ImageStyles.css"></style>

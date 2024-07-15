@@ -2,45 +2,16 @@
 import { LogError } from '@/helpers/LogHelper/LogError';
 import { ImageResolution } from './ImageResolution';
 export class ImageData {
-  /**
-   * @type {number}
-   */
-  currentWidth;
 
-  /**
-   * @type {number}
-   */
-  currentHeight;
-
-  /**
-   * @type {number}
-   */
-  targetWidth;
-
-  /**
-   * @type {number}
-   */
-  targetHeight;
-
-  /**
-   * @type {string}
-   */
-  currentImageSrc;
-
-  /**
-   * @type {number}
-   */
-  currentFileSize;
-
-  /**
-   * @type {string}
-   */
-  currentFileName;
-
+  targetWidth: number
+  targetHeight: number
+  currentImageSrc: string;
+  currentFileSize: number;
+  currentFileName: string;
+  resolution: ImageResolution;
   constructor(file) {
     //FIXME Replace current width and height with resolution. Remove targetWidth and targetHeight
-    this.currentWidth = 0;
-    this.currentHeight = 0;
+    this.resolution = new ImageResolution(1, 1);
     this.targetWidth = 0;
     this.targetHeight = 0;
     this.currentImageSrc = '';
@@ -60,11 +31,10 @@ export class ImageData {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        this.currentWidth = img.width;
-        this.currentHeight = img.height;
-        this.currentImageSrc = e.target.result;
+
         try {
-          new ImageResolution(this.currentWidth, this.currentHeight); // Validate the image resolution
+          this.resolution = new ImageResolution(img.width, img.height); // Validate and set the image resolution
+          this.currentImageSrc = e.target?.result as string;
         } catch (error) {
           LogError(error, this.currentFileName);
           return;
@@ -73,7 +43,7 @@ export class ImageData {
       img.onerror = () => {
         LogError(new Error("Invalid image file."), this.currentFileName);
       };
-      img.src = e.target.result;
+      img.src = e.target?.result as string;
     };
     reader.onerror = () => {
       LogError(new Error("Error reading file."), this.currentFileName);
