@@ -45,7 +45,7 @@
       <div v-else-if="isImageLoaded" class="initial-options">
         <button class="resize-button" @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
         <label for="sizeOptions" class="reduce-size-label">Reduce Image Size:</label>
-        <select v-model="selectedSize" @change="reduceSizeByFileSize" class="reduce-size-select" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
+        <select v-model="selectedSize" @change="resizeImageByFileSize" class="reduce-size-select" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
           <option value="" disabled>Select a size</option>
           <option value="512000">500 KB</option>
           <option value="1048576">1 MB</option>
@@ -139,8 +139,7 @@ export default {
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
         try {
-          const targetResolution = new ImageResolution(this.imageModelInstance.targetResolution.width, this.imageModelInstance.targetResolution.height);
-          const resizedImageURL = resizeImageByResolution(img, targetResolution);
+          const resizedImageURL = resizeImageByResolution(img, this.imageModelInstance.targetResolution);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false;
         } catch (error) {
@@ -148,7 +147,7 @@ export default {
         }
       };
     },
-    reduceSizeByFileSize() {
+    resizeImageByFileSize() {
       if (!this.selectedSize) {
         this.displayErrorMessage("Please select a size.");
         return;
