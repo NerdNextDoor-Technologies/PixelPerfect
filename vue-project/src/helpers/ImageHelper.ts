@@ -9,7 +9,7 @@
 import { ImageResolution } from '@/models/image/ImageResolution';
 
 
-export function resizeImage(imageElement: HTMLImageElement, targetImageResolution: { width: number; height: number }, qualityFactor: number = 1.0): string {
+export function resizeImageByResolution(imageElement: HTMLImageElement, targetImageResolution: { width: number; height: number }, qualityFactor: number = 1.0): string {
   const canvasElement = document.createElement('canvas');
   canvasElement.width = targetImageResolution.width;
   canvasElement.height = targetImageResolution.height;
@@ -18,7 +18,7 @@ export function resizeImage(imageElement: HTMLImageElement, targetImageResolutio
   return canvasElement.toDataURL('image/jpeg', qualityFactor);
 }
 
-export function resizedImage1(imageElement: HTMLImageElement, targetSizeInBytes: number): string {
+export function resizedImageByFileSize(imageElement: HTMLImageElement, targetSizeInBytes: number): string {
   const minimumImageResolution = { width: 50, height: 50 }; // Minimum allowable dimensions to avoid too much reduction
   let qualityFactor = 1.0;
   const targetImageResolution = new ImageResolution(imageElement.width, imageElement.height);
@@ -31,7 +31,7 @@ export function resizedImage1(imageElement: HTMLImageElement, targetSizeInBytes:
     targetImageResolution.height = Math.round(imageElement.height * reductionRatio);
 
     while (targetImageResolution.width > minimumImageResolution.width && targetImageResolution.height > minimumImageResolution.height) {
-      const resizedImage = resizeImage(imageElement, targetImageResolution, qualityFactor);
+      const resizedImage = resizeImageByResolution(imageElement, targetImageResolution, qualityFactor);
       const resizedImageSizeInBytes = resizedImage.length * 3 / 4;
 
       if (resizedImageSizeInBytes <= targetSizeInBytes) {

@@ -64,7 +64,7 @@
 <script>
 import { ImageData } from '../models/image/ImageModel.js';
 import { ImageResolution } from '@/models/image/ImageResolution.js';
-import { resizeImage, resizedImage1 } from '../helpers/ImageHelper.ts';
+import { resizeImageByResolution, resizedImageByFileSize } from '../helpers/ImageHelper.ts';
 import { AppState } from '@/models/app/AppState.js';
 import { Errors } from '@/models/image/ImageDimensionsErrorMessage.js';
 
@@ -141,7 +141,7 @@ export default {
       img.onload = () => {
         try {
           const targetimageResolution = new ImageResolution(this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
-          const resizedImageURL = resizeImage(img, targetimageResolution);
+          const resizedImageURL = resizeImageByResolution(img, targetimageResolution);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false;
         } catch (error) {
@@ -159,7 +159,7 @@ export default {
       img.onload = () => {
 
         try {
-          const reducedImageURL = resizedImage1(img, parseInt(this.selectedSize));
+          const reducedImageURL = resizedImageByFileSize(img, parseInt(this.selectedSize));
           this.createDownloadLinkAndTriggerDownload(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
           this.displayErrorMessage(error.message || "An error occurred while reducing the image size.");
