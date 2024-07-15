@@ -9,11 +9,12 @@ export class ImageData {
   currentFileSize: number;
   currentFileName: string;
   resolution: ImageResolution;
+
+  targetResolution: ImageResolution;
   constructor(file) {
-    //FIXME Replace current width and height with resolution. Remove targetWidth and targetHeight
+
     this.resolution = new ImageResolution(1, 1);
-    this.targetWidth = 0;
-    this.targetHeight = 0;
+    this.targetResolution = new ImageResolution(1, 1);
     this.currentImageSrc = '';
     this.currentFileSize = 0;
     this.currentFileName = '';
