@@ -22,7 +22,7 @@
 
       <div v-if="isImageLoaded" class="image-details">
         <p><strong>Selected File:</strong> {{ imageModelInstance.currentFileName }}</p>
-        <p>Current Dimensions: <span>{{ imageModelInstance.resolution.width }}</span> x <span>{{ imageModelInstance.resolution.height }}</span></p>
+        <p>Current Dimensions: <span>{{ imageModelInstance.currentResolution.width }}</span> x <span>{{ imageModelInstance.currentResolution.height }}</span></p>
         <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
       </div>
 
@@ -117,13 +117,13 @@ export default {
       }
     },
     keepAspectRatio(dimension) {
-      if (!this.appStateInstance.keepAspectRatio || !this.imageModelInstance.resolution.width || !this.imageModelInstance.resolution.height) return;
+      if (!this.appStateInstance.keepAspectRatio || !this.imageModelInstance.currentResolution.width || !this.imageModelInstance.currentResolution.height) return;
 
       if (dimension === 'width') {
-        const aspectRatio = this.imageModelInstance.resolution.height / this.imageModelInstance.resolution.width;
+        const aspectRatio = this.imageModelInstance.currentResolution.height / this.imageModelInstance.currentResolution.width;
         this.imageModelInstance.targetResolution.height = Math.round(this.imageModelInstance.targetResolution.width * aspectRatio);
       } else if (dimension === 'height') {
-        const aspectRatio = this.imageModelInstance.resolution.width / this.imageModelInstance.resolution.height;
+        const aspectRatio = this.imageModelInstance.currentResolution.width / this.imageModelInstance.currentResolution.height;
         this.imageModelInstance.targetResolution.width = Math.round(this.imageModelInstance.targetResolution.height * aspectRatio);
       }
     },

@@ -8,12 +8,12 @@ export class ImageData {
   currentImageSrc: string;
   currentFileSize: number;
   currentFileName: string;
-  resolution: ImageResolution;
+  currentResolution: ImageResolution;
 
   targetResolution: ImageResolution;
   constructor(file) {
 
-    this.resolution = new ImageResolution(1, 1);
+    this.currentResolution = new ImageResolution(1, 1);
     this.targetResolution = new ImageResolution(1, 1);
     this.currentImageSrc = '';
     this.currentFileSize = 0;
@@ -34,7 +34,7 @@ export class ImageData {
       img.onload = () => {
 
         try {
-          this.resolution = new ImageResolution(img.width, img.height); // Validate and set the image resolution
+          this.currentResolution = new ImageResolution(img.width, img.height); // Validate and set the image resolution
           this.currentImageSrc = e.target?.result as string;
         } catch (error) {
           LogError(error, this.currentFileName);
