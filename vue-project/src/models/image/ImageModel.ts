@@ -10,11 +10,9 @@ export class ImageData {
   currentFileName: string;
   currentResolution: ImageResolution;
 
-  targetResolution: ImageResolution;
   constructor(file) {
 
     this.currentResolution = new ImageResolution(1, 1);
-    this.targetResolution = new ImageResolution(1, 1);
     this.currentImageSrc = '';
     this.currentFileSize = 0;
     this.currentFileName = '';

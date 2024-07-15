@@ -28,10 +28,10 @@
 
       <div v-if="appStateInstance.showResizeFields" class="resize-fields">
         <label for="targetWidth">Width:</label>
-        <input type="number" v-model="imageModelInstance.targetResolution.width" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')">
+        <input type="number" v-model="targetResolution.width" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')">
         <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
         <label for="targetHeight">Height:</label>
-        <input type="number" v-model="imageModelInstance.targetResolution.height" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')">
+        <input type="number" v-model="targetResolution.height" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')">
         <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
         <label>
           <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
@@ -74,7 +74,8 @@ export default {
       errorMessages: new Errors(),
       appStateInstance: new AppState(),
       selectedSize: '',
-      lastModifiedDimension: ''
+      lastModifiedDimension: '',
+      targetResolution: new ImageResolution(1,1)
     };
   },
   computed: {
@@ -107,8 +108,8 @@ export default {
       this.appStateInstance.buttonsDisabled = buttonsDisabled;
     },
     validateTargetDimensions() {
-      const width = this.imageModelInstance.targetResolution.width;
-      const height = this.imageModelInstance.targetResolution.height;
+      const width = this.targetResolution.width;
+      const height = this.targetResolution.height;
       this.errorMessages.width = width <= 0 ? "Width must be greater than 0." : '';
       this.errorMessages.height = height <= 0 ? "Height must be greater than 0." : '';
       if (width * height > 25600000) {
@@ -121,10 +122,10 @@ export default {
 
       if (dimension === 'width') {
         const aspectRatio = this.imageModelInstance.currentResolution.height / this.imageModelInstance.currentResolution.width;
-        this.imageModelInstance.targetResolution.height = Math.round(this.imageModelInstance.targetResolution.width * aspectRatio);
+        this.targetResolution.height = Math.round(this.targetResolution.width * aspectRatio);
       } else if (dimension === 'height') {
         const aspectRatio = this.imageModelInstance.currentResolution.width / this.imageModelInstance.currentResolution.height;
-        this.imageModelInstance.targetResolution.width = Math.round(this.imageModelInstance.targetResolution.height * aspectRatio);
+        this.targetResolution.width = Math.round(this.targetResolution.height * aspectRatio);
       }
     },
     updateDimensions(dimension) {
@@ -139,7 +140,7 @@ export default {
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
         try {
-          const resizedImageURL = resizeImageByResolution(img, this.imageModelInstance.targetResolution);
+          const resizedImageURL = resizeImageByResolution(img, this.targetResolution);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false;
         } catch (error) {
