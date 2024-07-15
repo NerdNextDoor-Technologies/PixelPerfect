@@ -5,39 +5,33 @@
 //FIXME rename targetHeight to targetHeightInPixels
 //FIXME combine targetHeight and targetWidth into one object targetSizeInPixels
 //FIXME rename canvasElement to canvasElementElement
-//FIXME rename canvasElementContext to canvasElementContext
-export function resizeImage(imageElement, targetimageResolution) {
+
+import { ImageResolution } from '@/models/image/ImageResolution';
+
+
+export function resizeImage(imageElement: HTMLImageElement, targetImageResolution: { width: number; height: number }, qualityFactor: number = 1.0): string {
   const canvasElement = document.createElement('canvas');
-  canvasElement.width = targetimageResolution.width;
-  canvasElement.height = targetimageResolution.height;
+  canvasElement.width = targetImageResolution.width;
+  canvasElement.height = targetImageResolution.height;
   const canvasElementContext = canvasElement.getContext('2d');
-  canvasElementContext.drawImage(imageElement, 0, 0, targetimageResolution.width, targetimageResolution.height);
-  return canvasElement.toDataURL('image/jpeg');
+  canvasElementContext.drawImage(imageElement, 0, 0, targetImageResolution.width, targetImageResolution.height);
+  return canvasElement.toDataURL('image/jpeg', qualityFactor);
 }
 
-export function resizeImage1(imageElement, width, height, quality = 1.0) {
-  const canvasElement = document.createElement('canvas');
-  canvasElement.width = width;
-  canvasElement.height = height;
-  const canvasElementContext = canvasElement.getContext('2d');
-  canvasElementContext.drawImage(imageElement, 0, 0, width, height);
-  return canvasElement.toDataURL('image/jpeg', quality);
-}
-
-
-
-export function reduceImageToSize(image, targetSizeInBytes) {
-  const minimumTargetSizeInPixels = { width: 50, height: 50 }; // Minimum allowable dimensions to avoid too much reduction
+export function resizedImage1(imageElement: HTMLImageElement, targetSizeInBytes: number): string {
+  const minimumImageResolution = { width: 50, height: 50 }; // Minimum allowable dimensions to avoid too much reduction
   let qualityFactor = 1.0;
+  const targetImageResolution = new ImageResolution(imageElement.width, imageElement.height);
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const reductionRatio = Math.sqrt(targetSizeInBytes / (image.src.length * 3 / 4));
-    let targetWidth = Math.round(image.width * reductionRatio);
-    let targetHeight = Math.round(image.height * reductionRatio);
+    //2300x3400
+    const reductionRatio = Math.sqrt(targetSizeInBytes / (imageElement.src.length * 3 / 4));
+    targetImageResolution.width = Math.round(imageElement.width * reductionRatio);
+    targetImageResolution.height = Math.round(imageElement.height * reductionRatio);
 
-    while (targetWidth > minimumTargetSizeInPixels.width && targetHeight > minimumTargetSizeInPixels.height) {
-      const resizedImage = resizeImage1(image, targetWidth, targetHeight, qualityFactor);
+    while (targetImageResolution.width > minimumImageResolution.width && targetImageResolution.height > minimumImageResolution.height) {
+      const resizedImage = resizeImage(imageElement, targetImageResolution, qualityFactor);
       const resizedImageSizeInBytes = resizedImage.length * 3 / 4;
 
       if (resizedImageSizeInBytes <= targetSizeInBytes) {
@@ -45,8 +39,8 @@ export function reduceImageToSize(image, targetSizeInBytes) {
       }
 
       // Reduce the target dimensions by 10%
-      targetWidth = Math.round(targetWidth * 0.9);
-      targetHeight = Math.round(targetHeight * 0.9);
+      targetImageResolution.width = Math.round(targetImageResolution.width * 0.9);
+      targetImageResolution.height = Math.round(targetImageResolution.height * 0.9);
     }
 
     qualityFactor -= 0.1;
@@ -55,6 +49,7 @@ export function reduceImageToSize(image, targetSizeInBytes) {
     }
   }
 }
+
 
 
 

@@ -1,5 +1,6 @@
 // models/image/ImageModel.js
 import { LogError } from '@/helpers/LogHelper/LogError';
+import { ImageResolution } from './ImageResolution';
 export class ImageData {
   /**
    * @type {number}
@@ -37,6 +38,7 @@ export class ImageData {
   currentFileName;
 
   constructor(file) {
+    //FIXME Replace current width and height with resolution. Remove targetWidth and targetHeight
     this.currentWidth = 0;
     this.currentHeight = 0;
     this.targetWidth = 0;
@@ -50,6 +52,7 @@ export class ImageData {
     }
   }
 
+  //TODO use the constructor instead of this function
   loadImage(file) {
     this.currentFileSize = file.size;
     this.currentFileName = file.name;
@@ -78,27 +81,3 @@ export class ImageData {
     reader.readAsDataURL(file);
   }
 }
-export class ImageResolution {
-  /**
-   * @param {number} width
-   * @param {number} height
-   */
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-    this.validate();
-  }
-
-  validate() {
-    if (!Number.isInteger(this.width) || !Number.isInteger(this.height)) {
-      throw new Error("Width and height must be integers.");
-    }
-    if (this.width <= 0 || this.height <= 0) {
-      throw new Error("Width and height must be positive values.");
-    }
-    if (this.width * this.height > 25600000) {
-      throw new Error("The product of width and height must not exceed 25,600,000.");
-    }
-  }
-}
-
