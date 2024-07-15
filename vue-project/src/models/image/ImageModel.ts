@@ -3,8 +3,6 @@ import { LogError } from '@/helpers/LogHelper/LogError';
 import { ImageResolution } from './ImageResolution';
 export class ImageData {
 
-  targetWidth: number
-  targetHeight: number
   currentImageSrc: string;
   currentFileSize: number;
   currentFileName: string;
