@@ -8,22 +8,19 @@ export class ImageData {
   currentFileName: string;
   currentResolution: ImageResolution;
 
-  constructor(file) {
+  constructor(file: File) {
 
-    this.currentResolution = new ImageResolution(1, 1);
-    this.currentImageSrc = '';
-    this.currentFileSize = 0;
-    this.currentFileName = '';
 
-    if (file) {
-      this.loadImage(file);
-    }
+    this.currentFileSize = file.size;
+    this.currentFileName = file.name;
+
+    this.loadImage(file);
+
   }
 
   //TODO use the constructor instead of this function
-  loadImage(file) {
-    this.currentFileSize = file.size;
-    this.currentFileName = file.name;
+  loadImage(file: File) {
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -32,6 +29,9 @@ export class ImageData {
         try {
           this.currentResolution = new ImageResolution(img.width, img.height); // Validate and set the image resolution
           this.currentImageSrc = e.target?.result as string;
+
+
+
         } catch (error) {
           LogError(error, this.currentFileName);
           return;

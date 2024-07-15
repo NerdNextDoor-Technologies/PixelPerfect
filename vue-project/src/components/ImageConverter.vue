@@ -70,7 +70,7 @@ import { ImageResolution } from '@/models/image/ImageResolution.js';
 export default {
   data() {
     return {
-      imageModelInstance: new ImageData(),
+      imageModelInstance: {},
       errorMessages: new Errors(),
       appStateInstance: new AppState(),
       selectedSize: '',
@@ -93,16 +93,19 @@ export default {
         this.displayErrorMessage("No file selected.");
         return;
       }
-      this.imageModelInstance.loadImage(file);
+      this.imageModelInstance = new ImageData(file);
+      console.log(this.imageModelInstance.currentResolution);
+      
       this.updateState(true, false);
+      
     },
     handleFileDrop(event) {
       const files = event.dataTransfer.files;
       if (files.length > 0) {
-        this.imageModelInstance = new ImageData(files[0]);
-        this.updateState(true, false);
+        this.createImageDataInstance(files[0]);
       }
     },
+
     updateState(currentDimensionsVisible, buttonsDisabled) {
       this.appStateInstance.currentDimensionsVisible = currentDimensionsVisible;
       this.appStateInstance.buttonsDisabled = buttonsDisabled;
