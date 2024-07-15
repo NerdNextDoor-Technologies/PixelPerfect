@@ -37,7 +37,7 @@
           <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
         </label>
         <div class="buttons">
-          <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
+          <button @click="resizeImageByResolution" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
           <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
         </div>
       </div>
@@ -45,7 +45,7 @@
       <div v-else-if="isImageLoaded" class="initial-options">
         <button class="resize-button" @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
         <label for="sizeOptions" class="reduce-size-label">Reduce Image Size:</label>
-        <select v-model="selectedSize" @change="reduceSizeImage" class="reduce-size-select" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
+        <select v-model="selectedSize" @change="reduceSizeByFileSize" class="reduce-size-select" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
           <option value="" disabled>Select a size</option>
           <option value="512000">500 KB</option>
           <option value="1048576">1 MB</option>
@@ -135,7 +135,7 @@ export default {
       }
       this.validateTargetDimensions();
     },
-    resizeImage() {
+    resizeImageByResolution() {
       const img = new Image();
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
@@ -149,7 +149,7 @@ export default {
         }
       };
     },
-    reduceSizeImage() {
+    reduceSizeByFileSize() {
       if (!this.selectedSize) {
         this.displayErrorMessage("Please select a size.");
         return;
