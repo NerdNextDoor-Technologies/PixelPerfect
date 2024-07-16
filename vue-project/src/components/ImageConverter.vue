@@ -13,7 +13,8 @@
       <div v-if="!isImageLoaded" class="upload-container">
         <div class="drag-drop-area" @drop.prevent="handleFileDrop" @dragover.prevent>
           <label class="upload-label">
-            <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading">
+            <input type="file" @change="handleFileSelection" accept="image/*"
+              :disabled="appStateInstance.isDownloading">
             <span class="button">Select Image</span>
           </label>
           <p>or drag and drop an image here</p>
@@ -22,30 +23,42 @@
 
       <div v-if="isImageLoaded" class="image-details">
         <p><strong>Selected File:</strong> {{ imageModelInstance.currentFileName }}</p>
-        <p>Current Dimensions: <span>{{ imageModelInstance.currentResolution.width }}</span> x <span>{{ imageModelInstance.currentResolution.height }}</span></p>
+        <p>Current Dimensions: <span>{{ imageModelInstance.currentResolution.width }}</span> x <span>{{
+          imageModelInstance.currentResolution.height }}</span></p>
         <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
       </div>
 
       <div v-if="appStateInstance.showResizeFields" class="resize-fields">
         <label for="targetWidth">Width:</label>
-        <input type="number" v-model="targetResolution.width" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')">
+        <input type="number" v-model="targetResolution.width" class="input-width" placeholder="Enter target width"
+          @input="updateDimensions('width')">
         <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
         <label for="targetHeight">Height:</label>
-        <input type="number" v-model="targetResolution.height" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')">
+        <input type="number" v-model="targetResolution.height" class="input-height" placeholder="Enter target height"
+          @input="updateDimensions('height')">
         <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
         <label>
           <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
         </label>
         <div class="buttons">
-          <button @click="resizeImageByResolution" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
-          <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
+          <button @click="resizeImageByResolution"
+            :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded"
+            :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
+          <button @click="resetImageForm"
+            :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded"
+            :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
         </div>
       </div>
 
       <div v-else-if="isImageLoaded" class="initial-options">
-        <button class="resize-button" @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
+        <button class="resize-button" @click="showResizeFields"
+          :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled"
+          :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
         <label for="sizeOptions" class="reduce-size-label">Reduce Image Size:</label>
-        <select v-model="selectedSize" @change="resizeImageByFileSize" class="reduce-size-select" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
+        <!-- //TODO Replace with a slider with option for text box -->
+        <select v-model="selectedSize" @change="resizeImageByFileSize" class="reduce-size-select"
+          :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled"
+          :class="{ blurred: appStateInstance.buttonsDisabled }">
           <option value="" disabled>Select a size</option>
           <option value="512000">500 KB</option>
           <option value="1048576">1 MB</option>
@@ -70,12 +83,12 @@ import { ImageResolution } from '@/models/image/ImageResolution.js';
 export default {
   data() {
     return {
-      imageModelInstance: {},
+      imageModelInstance: null,
       errorMessages: new Errors(),
       appStateInstance: new AppState(),
       selectedSize: '',
       lastModifiedDimension: '',
-      targetResolution: new ImageResolution(1,1)
+      targetResolution: new ImageResolution(1, 1)
     };
   },
   computed: {
@@ -83,26 +96,30 @@ export default {
       return this.errorMessages.width !== '' || this.errorMessages.height !== '';
     },
     isImageLoaded() {
-      return !!this.imageModelInstance.currentImageSrc;
+      return !!this.imageModelInstance?.currentImageSrc;
     }
   },
   methods: {
-    handleFileSelection(event) {
+    async handleFileSelection(event) {
       const file = event.target.files[0];
       if (!file) {
         this.displayErrorMessage("No file selected.");
         return;
       }
-      this.imageModelInstance = new ImageData(file);
-      console.log(this.imageModelInstance.currentResolution);
-      
-      this.updateState(true, false);
-      
+
+      try {
+        this.imageModelInstance = await new ImageData(file);
+        console.log(this.imageModelInstance.currentResolution);
+
+        this.updateState(true, false);
+      } catch (error) {
+        this.displayErrorMessage(error.message || "An error occurred while loading the image.");
+      }
     },
     handleFileDrop(event) {
       const files = event.dataTransfer.files;
       if (files.length > 0) {
-        this.createImageDataInstance(files[0]);
+        // this.createImageDataInstance(files[0]);
       }
     },
 
@@ -110,6 +127,7 @@ export default {
       this.appStateInstance.currentDimensionsVisible = currentDimensionsVisible;
       this.appStateInstance.buttonsDisabled = buttonsDisabled;
     },
+    //TODO Do this using HTML 5 validation
     validateTargetDimensions() {
       const width = this.targetResolution.width;
       const height = this.targetResolution.height;
@@ -120,9 +138,16 @@ export default {
         this.errorMessages.height = "The product of width and height must not exceed 25,600,000.";
       }
     },
+    //TODO Move logic to ImageHelper as a reusable function
     keepAspectRatio(dimension) {
-      if (!this.appStateInstance.keepAspectRatio || !this.imageModelInstance.currentResolution.width || !this.imageModelInstance.currentResolution.height) return;
+      // if (this.appStateInstance.keepAspectRatio)
+      // {
+      //   this.targetResolution=resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.resolution, targetWidth,targetHeight);
+      // };
 
+      // resizeResolutionKeepingAspectRatioSame(currentResolution,targetWidth):ImageResolution;
+      // resizeResolutionKeepingAspectRatioSame(currentResolution,targetHeight):ImageResolution;
+      // resizeResolutionKeepingAspectRatioSame(currentResolution,targetWidth,targetHeight):ImageResolution;
       if (dimension === 'width') {
         const aspectRatio = this.imageModelInstance.currentResolution.height / this.imageModelInstance.currentResolution.width;
         this.targetResolution.height = Math.round(this.targetResolution.width * aspectRatio);
@@ -131,6 +156,7 @@ export default {
         this.targetResolution.width = Math.round(this.targetResolution.height * aspectRatio);
       }
     },
+    //TODO Dimension should be an enum
     updateDimensions(dimension) {
       this.lastModifiedDimension = dimension;
       if (this.appStateInstance.keepAspectRatio) {
