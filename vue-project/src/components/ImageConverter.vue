@@ -31,12 +31,19 @@
       <div v-if="appStateInstance.showResizeFields" class="resize-fields">
         <label for="targetWidth">Width:</label>
         <input type="number" v-model="targetResolution.width" class="input-width" placeholder="Enter target width"
-          @input="updateDimensions('width')">
-        <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
+          @input="updateDimensions('width')" min="1" required>
+        <p v-if="targetResolution.width < 1 || isNaN(targetResolution.width)" class="error">Width must be a number
+          greater than 0.</p>
+
         <label for="targetHeight">Height:</label>
         <input type="number" v-model="targetResolution.height" class="input-height" placeholder="Enter target height"
-          @input="updateDimensions('height')">
-        <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
+          @input="updateDimensions('height')" min="1" required>
+        <p v-if="targetResolution.height < 1 || isNaN(targetResolution.height)" class="error">Height must be a number
+          greater than 0.</p>
+
+        <p v-if="targetResolution.width * targetResolution.height > 25600000" class="error">The product of width and
+          height must not exceed 25,600,000.</p>
+
         <label>
           <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
         </label>
@@ -55,7 +62,6 @@
           :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled"
           :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
         <label for="sizeOptions" class="reduce-size-label">Reduce Image Size:</label>
-        <!-- //TODO Replace with a slider with option for text box -->
         <select v-model="selectedSize" @change="resizeImageByFileSize" class="reduce-size-select"
           :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled"
           :class="{ blurred: appStateInstance.buttonsDisabled }">
@@ -93,7 +99,7 @@ export default {
   },
   computed: {
     hasValidationErrors() {
-      return this.errorMessages.width !== '' || this.errorMessages.height !== '';
+      return this.targetResolution.width <= 0 || this.targetResolution.height <= 0 || this.targetResolution.width * this.targetResolution.height > 25600000;
     },
     isImageLoaded() {
       return !!this.imageModelInstance?.currentImageSrc;
@@ -129,32 +135,11 @@ export default {
         }
       }
     },
-
     updateState(currentDimensionsVisible, buttonsDisabled) {
       this.appStateInstance.currentDimensionsVisible = currentDimensionsVisible;
       this.appStateInstance.buttonsDisabled = buttonsDisabled;
     },
-    //TODO Do this using HTML 5 validation
-    validateTargetDimensions() {
-      const width = this.targetResolution.width;
-      const height = this.targetResolution.height;
-      this.errorMessages.width = width <= 0 ? "Width must be greater than 0." : '';
-      this.errorMessages.height = height <= 0 ? "Height must be greater than 0." : '';
-      if (width * height > 25600000) {
-        this.errorMessages.width = "The product of width and height must not exceed 25,600,000.";
-        this.errorMessages.height = "The product of width and height must not exceed 25,600,000.";
-      }
-    },
-    //TODO Move logic to ImageHelper as a reusable function
     keepAspectRatio(dimension) {
-      // if (this.appStateInstance.keepAspectRatio)
-      // {
-      //   this.targetResolution=resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.resolution, targetWidth,targetHeight);
-      // };
-
-      // resizeResolutionKeepingAspectRatioSame(currentResolution,targetWidth):ImageResolution;
-      // resizeResolutionKeepingAspectRatioSame(currentResolution,targetHeight):ImageResolution;
-      // resizeResolutionKeepingAspectRatioSame(currentResolution,targetWidth,targetHeight):ImageResolution;
       if (dimension === 'width') {
         const aspectRatio = this.imageModelInstance.currentResolution.height / this.imageModelInstance.currentResolution.width;
         this.targetResolution.height = Math.round(this.targetResolution.width * aspectRatio);
@@ -163,13 +148,11 @@ export default {
         this.targetResolution.width = Math.round(this.targetResolution.height * aspectRatio);
       }
     },
-    //TODO Dimension should be an enum
     updateDimensions(dimension) {
       this.lastModifiedDimension = dimension;
       if (this.appStateInstance.keepAspectRatio) {
         this.keepAspectRatio(dimension);
       }
-      this.validateTargetDimensions();
     },
     resizeImageByResolution() {
       const img = new Image();
