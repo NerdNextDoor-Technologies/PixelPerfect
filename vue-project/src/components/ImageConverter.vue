@@ -81,7 +81,7 @@
 
 <script>
 import { ImageData } from '@/models/image/ImageModel';
-import { resizeImageByResolution, resizedImageByFileSize } from '../helpers/ImageHelper';
+import { resizeResolutionKeepingAspectRatioSame, resizeImageByResolution, resizedImageByFileSize } from '../helpers/ImageHelper';
 import { AppState } from '@/models/app/AppState';
 import { Errors } from '@/models/image/ImageDimensionsErrorMessage';
 import { ImageResolution } from '@/models/image/ImageResolution.js';
@@ -141,11 +141,11 @@ export default {
     },
     keepAspectRatio(dimension) {
       if (dimension === 'width') {
-        const aspectRatio = this.imageModelInstance.currentResolution.height / this.imageModelInstance.currentResolution.width;
-        this.targetResolution.height = Math.round(this.targetResolution.width * aspectRatio);
+        const newResolution = resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.currentResolution, this.targetResolution.width);
+        this.targetResolution.height = newResolution.height;
       } else if (dimension === 'height') {
-        const aspectRatio = this.imageModelInstance.currentResolution.width / this.imageModelInstance.currentResolution.height;
-        this.targetResolution.width = Math.round(this.targetResolution.height * aspectRatio);
+        const newResolution = resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.currentResolution, undefined, this.targetResolution.height);
+        this.targetResolution.width = newResolution.width;
       }
     },
     updateDimensions(dimension) {

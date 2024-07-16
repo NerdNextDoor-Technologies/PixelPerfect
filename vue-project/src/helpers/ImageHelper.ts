@@ -39,3 +39,20 @@ export function resizedImageByFileSize(imageElement: HTMLImageElement, targetSiz
     }
   }
 }
+
+export function resizeResolutionKeepingAspectRatioSame(currentResolution: ImageResolution, targetWidth: number): ImageResolution;
+export function resizeResolutionKeepingAspectRatioSame(currentResolution: ImageResolution, targetHeight: number): ImageResolution;
+
+export function resizeResolutionKeepingAspectRatioSame(currentResolution: ImageResolution, targetWidth?: number, targetHeight?: number): ImageResolution {
+  const aspectRatio: number = currentResolution.width / currentResolution.height;
+
+  if (targetWidth !== undefined && targetHeight === undefined) {
+    return new ImageResolution(targetWidth, Math.round(targetWidth / aspectRatio));
+  } else if (targetWidth === undefined && targetHeight !== undefined) {
+    return new ImageResolution(Math.round(targetHeight * aspectRatio), targetHeight);
+  } else if (targetWidth !== undefined && targetHeight !== undefined) {
+    return new ImageResolution(targetWidth, targetHeight);
+  }
+
+  throw new Error("Either targetWidth or targetHeight must be provided.");
+}
