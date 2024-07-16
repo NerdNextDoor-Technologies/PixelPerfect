@@ -110,16 +110,23 @@ export default {
       try {
         this.imageModelInstance = await new ImageData(file);
         console.log(this.imageModelInstance.currentResolution);
-
         this.updateState(true, false);
       } catch (error) {
         this.displayErrorMessage(error.message || "An error occurred while loading the image.");
       }
     },
-    handleFileDrop(event) {
+    async handleFileDrop(event) {
+      event.preventDefault(); // Prevent default behavior (Prevent file from being opened)
       const files = event.dataTransfer.files;
       if (files.length > 0) {
-        // this.createImageDataInstance(files[0]);
+        const file = files[0];
+
+        try {
+          this.imageModelInstance = await new ImageData(file);
+          this.updateState(true, false);
+        } catch (error) {
+          this.displayErrorMessage(error.message || "An error occurred while loading the image.");
+        }
       }
     },
 
