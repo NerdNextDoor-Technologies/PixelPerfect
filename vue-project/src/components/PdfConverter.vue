@@ -33,9 +33,7 @@
     <div v-if="state === 'COMPRESSION_IN_PROGRESS'" class="downloading-message">Compressing...</div>
     <div v-if="state === 'READY_FOR_DOWNLOAD'" class="download-section">
       <div class="adjacent-container">
-        <a :href="safeDownloadLink" download="compressed.pdf" class="button download-messagee">Download Compressed
-          PDF</a>
-        <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
+        <a :href="safeDownloadLink" download="compressed.pdf" class="download-messagee">Download</a>
       </div>
     </div>
   </div>
