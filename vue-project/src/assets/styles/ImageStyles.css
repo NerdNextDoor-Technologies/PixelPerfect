@@ -7,6 +7,10 @@ body {
   font-size: 18px;
 }
 
+.button-blurred {
+  filter: blur(2px);
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -130,6 +134,17 @@ h1 {
   border-radius: 4px;
   font-size: 18px;
 }
+
+.submit-button {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 20px;
+  margin-right: -13022301px;
+  gap: 20px;
+}
+
+
 
 .buttons {
   display: flex;

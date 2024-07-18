@@ -2,9 +2,9 @@
   <div id="app">
     <!-- Navbar -->
     <nav class="navbar">
-      <a href="#" class="navbar-brand">Image App</a>
+      <a href="/" class="navbar-brand">Image App</a>
       <ul class="navbar-nav">
-        <li class="nav-item"><a href="#" class="nav-link" @click.prevent="navigate('LandingPage')">Home</a></li>
+        <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
         <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
       </ul>
     </nav>
@@ -13,7 +13,8 @@
       <div v-if="!isImageLoaded" class="upload-container">
         <div class="drag-drop-area" @drop.prevent="handleFileDrop" @dragover.prevent>
           <label class="upload-label">
-            <input type="file" @change="handleFileSelection" accept="image/*" :disabled="appStateInstance.isDownloading">
+            <input type="file" @change="handleFileSelection" accept="image/*"
+              :disabled="appStateInstance.isDownloading">
             <span class="button">Select Image</span>
           </label>
           <p>or drag and drop an image here</p>
@@ -22,30 +23,50 @@
 
       <div v-if="isImageLoaded" class="image-details">
         <p><strong>Selected File:</strong> {{ imageModelInstance.currentFileName }}</p>
-        <p>Current Dimensions: <span>{{ imageModelInstance.currentWidth }}</span> x <span>{{ imageModelInstance.currentHeight }}</span></p>
+        <p>Current Dimensions: <span>{{ imageModelInstance.currentResolution.width }}</span> x <span>{{
+          imageModelInstance.currentResolution.height }}</span></p>
         <p>Current Size: <span>{{ (imageModelInstance.currentFileSize / 1048576).toFixed(2) }}</span> MB</p>
       </div>
 
       <div v-if="appStateInstance.showResizeFields" class="resize-fields">
         <label for="targetWidth">Width:</label>
-        <input type="number" v-model="imageModelInstance.targetWidth" class="input-width" placeholder="Enter target width" @input="updateDimensions('width')">
-        <p v-if="errorMessages.width" class="error">{{ errorMessages.width }}</p>
+        <input type="number" v-model="targetResolution.width" class="input-width" placeholder="Enter target width"
+          @input="updateDimensions(Dimension.WIDTH)" min="1" required>
+        <p v-if="targetResolution.width < 1 || isNaN(targetResolution.width)" class="error">Width must be a number
+          greater than 0.</p>
+
         <label for="targetHeight">Height:</label>
-        <input type="number" v-model="imageModelInstance.targetHeight" class="input-height" placeholder="Enter target height" @input="updateDimensions('height')">
-        <p v-if="errorMessages.height" class="error">{{ errorMessages.height }}</p>
+        <input type="number" v-model="targetResolution.height" class="input-height" placeholder="Enter target height"
+          @input="updateDimensions(Dimension.HEIGHT)" min="1" required>
+        <p v-if="targetResolution.height < 1 || isNaN(targetResolution.height)" class="error">Height must be a number
+          greater than 0.</p>
+
+        <p v-if="targetResolution.width * targetResolution.height > 25600000" class="error">The product of width and
+          height must not exceed 25,600,000.</p>
+
         <label>
           <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
         </label>
-        <div class="buttons">
-          <button @click="resizeImage" :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
-          <button @click="resetImageForm" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded" :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
+        <div class="submit-button">
+          <button @click="resizeImageByResolution"
+            :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded || hasErrors"
+            :class="{ blurred: appStateInstance.buttonsDisabled || hasErrors }">
+            Submit
+          </button>
+          <button @click="resetImageForm"
+            :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded"
+            :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
         </div>
       </div>
 
       <div v-else-if="isImageLoaded" class="initial-options">
-        <button class="resize-button" @click="showResizeFields" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
+        <button class="resize-button" @click="showResizeFields"
+          :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled"
+          :class="{ blurred: appStateInstance.buttonsDisabled }">Resize Image</button>
         <label for="sizeOptions" class="reduce-size-label">Reduce Image Size:</label>
-        <select v-model="selectedSize" @change="reduceSizeImage" class="reduce-size-select" :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled" :class="{ blurred: appStateInstance.buttonsDisabled }">
+        <select v-model="selectedSize" @change="resizeImageByFileSize" class="reduce-size-select"
+          :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled"
+          :class="{ blurred: appStateInstance.buttonsDisabled }">
           <option value="" disabled>Select a size</option>
           <option value="512000">500 KB</option>
           <option value="1048576">1 MB</option>
@@ -60,67 +81,79 @@
   </div>
 </template>
 
-
 <script>
-import { ImageData, Errors, AppState } from '../models/image/ImageModel.js';
-import { resizeImage, reduceImageToSize } from '../helpers/ImageHelper.js';
+import { ImageData } from '@/models/image/ImageModel';
+import { resizeResolutionKeepingAspectRatioSame, resizeImageByResolution, resizeImageByFileSize } from '../helpers/ImageHelper';
+import { AppState } from '@/models/app/AppState';
+import { Errors } from '@/models/image/ImageDimensionsErrorMessage';
+import { ImageResolution } from '@/models/image/ImageResolution.js';
+import { Dimension } from '@/models/ENUM/ImageDimension';
+
+
 
 export default {
   data() {
     return {
-      imageModelInstance: new ImageData(),
+      imageModelInstance: null,
       errorMessages: new Errors(),
       appStateInstance: new AppState(),
       selectedSize: '',
-      lastModifiedDimension: ''
+      lastModifiedDimension: '',
+      targetResolution: new ImageResolution(1, 1),
+      Dimension
     };
   },
   computed: {
     hasValidationErrors() {
-      return this.errorMessages.width !== '' || this.errorMessages.height !== '';
+      return this.targetResolution.width <= 0 || this.targetResolution.height <= 0 || this.targetResolution.width * this.targetResolution.height > 25600000;
     },
     isImageLoaded() {
-      return !!this.imageModelInstance.currentImageSrc;
+      return !!this.imageModelInstance?.currentImageSrc;
+    },
+    hasErrors() {
+      return !!this.appStateInstance.errorMessage;
     }
   },
   methods: {
-    handleFileSelection(event) {
+    async handleFileSelection(event) {
       const file = event.target.files[0];
       if (!file) {
         this.displayErrorMessage("No file selected.");
         return;
       }
-      this.imageModelInstance.loadImage(file, this.displayErrorMessage.bind(this), this.updateState.bind(this));
+
+      try {
+        this.imageModelInstance = await new ImageData(file);
+        this.updateState(true, false);
+      } catch (error) {
+        this.displayErrorMessage(error.message || "An error occurred while loading the image.");
+      }
     },
-    handleFileDrop(event) {
+    async handleFileDrop(event) {
+      event.preventDefault(); // Prevent default behavior (Prevent file from being opened)
       const files = event.dataTransfer.files;
       if (files.length > 0) {
-        this.imageModelInstance.loadImage(files[0], this.displayErrorMessage.bind(this), this.updateState.bind(this));
+        const file = files[0];
+
+        try {
+          this.imageModelInstance = await new ImageData(file);
+          this.updateState(true, false);
+        } catch (error) {
+          this.displayErrorMessage(error.message || "An error occurred while loading the image.");
+        }
       }
     },
     updateState(currentDimensionsVisible, buttonsDisabled) {
       this.appStateInstance.currentDimensionsVisible = currentDimensionsVisible;
       this.appStateInstance.buttonsDisabled = buttonsDisabled;
     },
-    validateTargetDimensions() {
-      const width = this.imageModelInstance.targetWidth;
-      const height = this.imageModelInstance.targetHeight;
-      this.errorMessages.width = width <= 0 ? "Width must be greater than 0." : '';
-      this.errorMessages.height = height <= 0 ? "Height must be greater than 0." : '';
-      if (width * height > 25600000) {
-        this.errorMessages.width = "The product of width and height must not exceed 25,600,000.";
-        this.errorMessages.height = "The product of width and height must not exceed 25,600,000.";
-      }
-    },
     keepAspectRatio(dimension) {
-      if (!this.appStateInstance.keepAspectRatio || !this.imageModelInstance.currentWidth || !this.imageModelInstance.currentHeight) return;
-
-      if (dimension === 'width') {
-        const aspectRatio = this.imageModelInstance.currentHeight / this.imageModelInstance.currentWidth;
-        this.imageModelInstance.targetHeight = Math.round(this.imageModelInstance.targetWidth * aspectRatio);
-      } else if (dimension === 'height') {
-        const aspectRatio = this.imageModelInstance.currentWidth / this.imageModelInstance.currentHeight;
-        this.imageModelInstance.targetWidth = Math.round(this.imageModelInstance.targetHeight * aspectRatio);
+      if (dimension === Dimension.WIDTH) {
+        const newResolution = resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.currentResolution, this.targetResolution.width);
+        this.targetResolution.height = newResolution.height;
+      } else if (dimension === Dimension.HEIGHT) {
+        const newResolution = resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.currentResolution, undefined, this.targetResolution.height);
+        this.targetResolution.width = newResolution.width;
       }
     },
     updateDimensions(dimension) {
@@ -128,28 +161,21 @@ export default {
       if (this.appStateInstance.keepAspectRatio) {
         this.keepAspectRatio(dimension);
       }
-      this.validateTargetDimensions();
     },
-    resizeImage() {
+    resizeImageByResolution() {
       const img = new Image();
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
-        const targetWidth = this.imageModelInstance.targetWidth || img.width;
-        const targetHeight = this.imageModelInstance.targetHeight || (img.height / img.width) * targetWidth;
-
-        this.imageModelInstance.validateResolution(targetWidth, targetHeight, this.displayErrorMessage.bind(this));
-        if (!this.imageModelInstance.isValid) return;
-
         try {
-          const resizedImageURL = resizeImage(img, this.imageModelInstance.targetWidth, this.imageModelInstance.targetHeight);
+          const resizedImageURL = resizeImageByResolution(img, this.targetResolution);
           this.createDownloadLinkAndTriggerDownload(resizedImageURL, 'resized-image.jpg');
           this.appStateInstance.currentDimensionsVisible = false;
         } catch (error) {
-          this.displayErrorMessage(error.message || "An error occurred while resizing the image."); 
+          this.displayErrorMessage(error.message);
         }
       };
     },
-    reduceSizeImage() {
+    resizeImageByFileSize() {
       if (!this.selectedSize) {
         this.displayErrorMessage("Please select a size.");
         return;
@@ -157,14 +183,8 @@ export default {
       const img = new Image();
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
-        const targetWidth = img.width;
-        const targetHeight = img.height;
-
-        this.imageModelInstance.validateResolution(targetWidth, targetHeight, this.displayErrorMessage.bind(this));
-        if (!this.imageModelInstance.isValid) return;
-
         try {
-          const reducedImageURL = reduceImageToSize(img, parseInt(this.selectedSize));
+          const reducedImageURL = resizeImageByFileSize(img, parseInt(this.selectedSize));
           this.createDownloadLinkAndTriggerDownload(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
           this.displayErrorMessage(error.message || "An error occurred while reducing the image size.");
@@ -189,8 +209,8 @@ export default {
     },
     resetImageForm() {
       this.appStateInstance.showResizeFields = false;
-      this.imageModelInstance.targetWidth = null;
-      this.imageModelInstance.targetHeight = null;
+      this.targetWidth = null;
+      this.targetHeight = null;
       this.appStateInstance.errorMessage = '';
       this.appStateInstance.currentDimensionsVisible = true;
       this.appStateInstance.buttonsDisabled = false;
@@ -202,6 +222,5 @@ export default {
   },
 };
 </script>
-
 
 <style scoped src="../assets/styles/ImageStyles.css"></style>
