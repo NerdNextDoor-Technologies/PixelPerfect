@@ -40,10 +40,10 @@ export function resizeImageByFileSize(imageElement: HTMLImageElement, targetSize
   }
 }
 
-export function resizeResolutionKeepingAspectRatioSame(currentResolution: ImageResolution, targetWidth: number): ImageResolution;
-export function resizeResolutionKeepingAspectRatioSame(currentResolution: ImageResolution, targetHeight: number): ImageResolution;
+export function getScaledResolution(currentResolution: ImageResolution, targetWidth: number): ImageResolution;
+export function getScaledResolution(currentResolution: ImageResolution, targetHeight: number): ImageResolution;
 
-export function resizeResolutionKeepingAspectRatioSame(currentResolution: ImageResolution, targetWidth?: number, targetHeight?: number): ImageResolution {
+export function getScaledResolution(currentResolution: ImageResolution, targetWidth?: number, targetHeight?: number): ImageResolution {
   const aspectRatio: number = currentResolution.width / currentResolution.height;
 
   if (targetWidth !== undefined && targetHeight === undefined) {

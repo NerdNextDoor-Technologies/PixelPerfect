@@ -83,7 +83,7 @@
 
 <script>
 import { ImageData } from '@/models/image/ImageModel';
-import { resizeResolutionKeepingAspectRatioSame, resizeImageByResolution, resizeImageByFileSize } from '../helpers/ImageHelper';
+import { getScaledResolution, resizeImageByResolution, resizeImageByFileSize } from '../helpers/ImageHelper';
 import { AppState } from '@/models/app/AppState';
 import { Errors } from '@/models/image/ImageDimensionsErrorMessage';
 import { ImageResolution } from '@/models/image/ImageResolution.js';
@@ -149,10 +149,10 @@ export default {
     },
     keepAspectRatio(dimension) {
       if (dimension === Dimension.WIDTH) {
-        const newResolution = resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.currentResolution, this.targetResolution.width);
+        const newResolution = getScaledResolution(this.imageModelInstance.currentResolution, this.targetResolution.width);
         this.targetResolution.height = newResolution.height;
       } else if (dimension === Dimension.HEIGHT) {
-        const newResolution = resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.currentResolution, undefined, this.targetResolution.height);
+        const newResolution = getScaledResolution(this.imageModelInstance.currentResolution, undefined, this.targetResolution.height);
         this.targetResolution.width = newResolution.width;
       }
     },
