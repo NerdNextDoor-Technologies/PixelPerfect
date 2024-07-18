@@ -1,9 +1,9 @@
 <template>
   <div id="app">
     <nav class="navbar">
-      <a href="#" class="navbar-brand">PDF Compressor</a>
+      <a href="/" class="navbar-brand">PDF Compressor</a>
       <ul class="navbar-nav">
-        <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
         <li class="nav-item"><a href="#" class="nav-link">About</a></li>
       </ul>
     </nav>
@@ -33,8 +33,7 @@
     <div v-if="state === 'COMPRESSION_IN_PROGRESS'" class="downloading-message">Compressing...</div>
     <div v-if="state === 'READY_FOR_DOWNLOAD'" class="download-section">
       <div class="adjacent-container">
-        <a :href="safeDownloadLink" download="compressed.pdf" class="button download-messagee">Download Compressed PDF</a>
-        <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
+        <a :href="safeDownloadLink" download="compressed.pdf" class="download-messagee">Download</a>
       </div>
     </div>
   </div>
@@ -42,7 +41,11 @@
 
 <script>
 import { compressPDF } from '../helpers/PdfHelper';
-import { PdfData, CompressionState } from '../models/pdf/PdfModel';
+import { PdfData } from '../models/pdf/PdfModel';
+import { COMPRESSIONSTATE } from '@/models/enum/CompressionState';
+import Logger from '../helpers/Error/Logger';
+
+const logger = new Logger('pdfconverter.vue');
 
 export default {
   data() {
@@ -67,12 +70,12 @@ export default {
           const url = window.URL.createObjectURL(file);
           const size = (file.size / 1024).toFixed(2); // Size in KB
           this.file = { filename: file.name, url, size };
-          this.state = CompressionState.FILE_SELECTED;
+          this.state = COMPRESSIONSTATE.FILE_SELECTED;
         } else {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        this.handleError('An error occurred while processing the file.', error);
+        logger.logError(error);
       }
     },
     onDrop(event) {
@@ -82,24 +85,24 @@ export default {
           const url = window.URL.createObjectURL(file);
           const size = (file.size / 1024).toFixed(2); // Size in KB
           this.file = { filename: file.name, url, size };
-          this.state = CompressionState.FILE_SELECTED;
+          this.state = COMPRESSIONSTATE.FILE_SELECTED;
         } else {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
       } catch (error) {
-        this.handleError('An error occurred while processing the file.', error);
+        logger.logError(error);
       }
     },
     async onSubmit(event) {
       event.preventDefault();
       if (this.file) {
         const { filename, url } = this.file;
-        this.state = CompressionState.COMPRESSION_IN_PROGRESS;
+        this.state = COMPRESSIONSTATE.COMPRESSION_IN_PROGRESS;
         try {
           await this.beginCompression(url, filename, this.compressionLevel);
         } catch (error) {
-          this.handleError('An error occurred during compression. Please try again.', error);
-          this.state = CompressionState.FILE_SELECTED;
+          logger.logError(error);
+          this.state = COMPRESSIONSTATE.FILE_SELECTED;
         }
       }
     },
@@ -114,13 +117,13 @@ export default {
           this.showStatusUpdate
         );
       } catch (error) {
-        this.handleError('An error occurred while initiating compression.', error);
+        logger.logError(error);
         throw error;
       }
     },
     async handleCompressionCompletion(element) {
       try {
-        this.state = CompressionState.READY_FOR_DOWNLOAD;
+        this.state = COMPRESSIONSTATE.READY_FOR_DOWNLOAD;
         const { pdfURL } = await this.getPdfDownloadLink(element);
         if (this.isValidUrl(pdfURL)) {
           this.downloadLink = pdfURL;
@@ -128,8 +131,8 @@ export default {
           throw new Error('Invalid download link.');
         }
       } catch (error) {
-        this.handleError('An error occurred while completing the compression.', error);
-        this.state = CompressionState.FILE_SELECTED;
+        logger.logError(error);
+        this.state = COMPRESSIONSTATE.FILE_SELECTED;
       }
     },
     showProgress(...args) {
@@ -142,7 +145,7 @@ export default {
       try {
         return Promise.resolve({ pdfURL: element.pdfDataURL });
       } catch (error) {
-        this.handleError('An error occurred while retrieving the download link.', error);
+        logger.logError(error);
         throw error;
       }
     },
@@ -160,10 +163,6 @@ export default {
     resetFileState(message) {
       this.file = null;
       alert(message);
-    },
-    handleError(userMessage, error) {
-      console.error(userMessage, error);
-      alert(userMessage);
     }
   }
 };
