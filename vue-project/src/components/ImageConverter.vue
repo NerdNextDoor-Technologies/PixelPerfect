@@ -31,13 +31,13 @@
       <div v-if="appStateInstance.showResizeFields" class="resize-fields">
         <label for="targetWidth">Width:</label>
         <input type="number" v-model="targetResolution.width" class="input-width" placeholder="Enter target width"
-          @input="updateDimensions('width')" min="1" required>
+          @input="updateDimensions(Dimension.WIDTH)" min="1" required>
         <p v-if="targetResolution.width < 1 || isNaN(targetResolution.width)" class="error">Width must be a number
           greater than 0.</p>
 
         <label for="targetHeight">Height:</label>
         <input type="number" v-model="targetResolution.height" class="input-height" placeholder="Enter target height"
-          @input="updateDimensions('height')" min="1" required>
+          @input="updateDimensions(Dimension.HEIGHT)" min="1" required>
         <p v-if="targetResolution.height < 1 || isNaN(targetResolution.height)" class="error">Height must be a number
           greater than 0.</p>
 
@@ -87,6 +87,9 @@ import { resizeResolutionKeepingAspectRatioSame, resizeImageByResolution, resize
 import { AppState } from '@/models/app/AppState';
 import { Errors } from '@/models/image/ImageDimensionsErrorMessage';
 import { ImageResolution } from '@/models/image/ImageResolution.js';
+import { Dimension } from '@/models/ENUM/ImageDimension';
+
+
 
 export default {
   data() {
@@ -96,7 +99,8 @@ export default {
       appStateInstance: new AppState(),
       selectedSize: '',
       lastModifiedDimension: '',
-      targetResolution: new ImageResolution(1, 1)
+      targetResolution: new ImageResolution(1, 1),
+      Dimension
     };
   },
   computed: {
@@ -144,10 +148,10 @@ export default {
       this.appStateInstance.buttonsDisabled = buttonsDisabled;
     },
     keepAspectRatio(dimension) {
-      if (dimension === 'width') {
+      if (dimension === Dimension.WIDTH) {
         const newResolution = resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.currentResolution, this.targetResolution.width);
         this.targetResolution.height = newResolution.height;
-      } else if (dimension === 'height') {
+      } else if (dimension === Dimension.HEIGHT) {
         const newResolution = resizeResolutionKeepingAspectRatioSame(this.imageModelInstance.currentResolution, undefined, this.targetResolution.height);
         this.targetResolution.width = newResolution.width;
       }
