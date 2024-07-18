@@ -1,18 +1,10 @@
-import { COMPRESSIONLEVEL } from "@/assets/constants/compression_level";
-
-
-const CompressionState = {
-  NO_FILE_SELECTED: 'NO_FILE_SELECTED',
-  FILE_SELECTED: 'FILE_SELECTED',
-  COMPRESSION_IN_PROGRESS: 'COMPRESSION_IN_PROGRESS',
-  READY_FOR_DOWNLOAD: 'READY_FOR_DOWNLOAD'
-};
-
+import { COMPRESSIONLEVEL } from "../enum/COMPRESSIONLEVEL";
+import { COMPRESSIONSTATE } from "../enum/CompressionState";
 class PdfData {
   constructor() {
 
     /** @type {string} */
-    this.filestate = CompressionState.NO_FILE_SELECTED;
+    this.filestate = COMPRESSIONSTATE.NO_FILE_SELECTED;
 
     /** @type {{ filename: string, url: string } | null} */
     this.selectedFileMetadata = null;
@@ -25,4 +17,4 @@ class PdfData {
   }
 }
 
-export { PdfData, CompressionState };
+export { PdfData };

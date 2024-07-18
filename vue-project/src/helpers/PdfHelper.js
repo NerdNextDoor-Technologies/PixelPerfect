@@ -1,7 +1,7 @@
 // src/helpers/PdfHelper.js
 
 import { _GSPS2PDF } from '../ghostscript-utils';
-import { printErrorOnConsole } from './Error/PrintError';
+import { LogError } from './Error/LogHelper';
 
 function compressPDF(pdf, filename, compressionLevel, onLoadComplete, onProgress, onStatusUpdate) {
   const dataObject = { psDataURL: pdf };
@@ -15,7 +15,7 @@ function compressPDF(pdf, filename, compressionLevel, onLoadComplete, onProgress
       compressionLevel
     );
   } catch (error) {
-    printErrorOnConsole(error, 'PdfHelper.js');
+    LogError(error, 'PdfHelper.js');
     throw error;
   }
 }

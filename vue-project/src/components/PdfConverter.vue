@@ -33,7 +33,8 @@
     <div v-if="state === 'COMPRESSION_IN_PROGRESS'" class="downloading-message">Compressing...</div>
     <div v-if="state === 'READY_FOR_DOWNLOAD'" class="download-section">
       <div class="adjacent-container">
-        <a :href="safeDownloadLink" download="compressed.pdf" class="button download-messagee">Download Compressed PDF</a>
+        <a :href="safeDownloadLink" download="compressed.pdf" class="button download-messagee">Download Compressed
+          PDF</a>
         <button @click="doAnotherConversion" class="button another-conversion-button">Do Another Conversion</button>
       </div>
     </div>
@@ -42,8 +43,9 @@
 
 <script>
 import { compressPDF } from '../helpers/PdfHelper';
-import { PdfData, CompressionState } from '../models/pdf/PdfModel';
+import { PdfData } from '../models/pdf/PdfModel';
 import { LogError } from '../helpers/Error/LogHelper';
+import { COMPRESSIONSTATE } from '@/models/enum/CompressionState';
 
 export default {
   data() {
@@ -68,7 +70,7 @@ export default {
           const url = window.URL.createObjectURL(file);
           const size = (file.size / 1024).toFixed(2); // Size in KB
           this.file = { filename: file.name, url, size };
-          this.state = CompressionState.FILE_SELECTED;
+          this.state = COMPRESSIONSTATE.FILE_SELECTED;
         } else {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
@@ -83,7 +85,7 @@ export default {
           const url = window.URL.createObjectURL(file);
           const size = (file.size / 1024).toFixed(2); // Size in KB
           this.file = { filename: file.name, url, size };
-          this.state = CompressionState.FILE_SELECTED;
+          this.state = COMPRESSIONSTATE.FILE_SELECTED;
         } else {
           this.resetFileState('Invalid file type. Please upload a PDF file.');
         }
@@ -95,12 +97,12 @@ export default {
       event.preventDefault();
       if (this.file) {
         const { filename, url } = this.file;
-        this.state = CompressionState.COMPRESSION_IN_PROGRESS;
+        this.state = COMPRESSIONSTATE.COMPRESSION_IN_PROGRESS;
         try {
           await this.beginCompression(url, filename, this.compressionLevel);
         } catch (error) {
           LogError(error, 'pdfconverter.vue');
-          this.state = CompressionState.FILE_SELECTED;
+          this.state = COMPRESSIONSTATE.FILE_SELECTED;
         }
       }
     },
@@ -121,7 +123,7 @@ export default {
     },
     async handleCompressionCompletion(element) {
       try {
-        this.state = CompressionState.READY_FOR_DOWNLOAD;
+        this.state = COMPRESSIONSTATE.READY_FOR_DOWNLOAD;
         const { pdfURL } = await this.getPdfDownloadLink(element);
         if (this.isValidUrl(pdfURL)) {
           this.downloadLink = pdfURL;
@@ -130,7 +132,7 @@ export default {
         }
       } catch (error) {
         LogError(error, 'pdfconverter.vue');
-        this.state = CompressionState.FILE_SELECTED;
+        this.state = COMPRESSIONSTATE.FILE_SELECTED;
       }
     },
     showProgress(...args) {
