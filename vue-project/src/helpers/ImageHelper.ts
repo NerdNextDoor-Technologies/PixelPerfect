@@ -44,6 +44,7 @@ export function getScaledResolution(currentResolution: ImageResolution, targetWi
 export function getScaledResolution(currentResolution: ImageResolution, targetHeight: number): ImageResolution;
 
 export function getScaledResolution(currentResolution: ImageResolution, targetWidth?: number, targetHeight?: number): ImageResolution {
+
   const aspectRatio: number = currentResolution.width / currentResolution.height;
 
   if (targetWidth !== undefined && targetHeight === undefined) {
