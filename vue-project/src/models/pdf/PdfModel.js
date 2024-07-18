@@ -1,5 +1,6 @@
 import { COMPRESSIONLEVEL } from "../enum/COMPRESSIONLEVEL";
 import { COMPRESSIONSTATE } from "../enum/CompressionState";
+
 class PdfData {
   constructor() {
 
