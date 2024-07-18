@@ -1,7 +1,11 @@
 // src/helpers/PdfHelper.js
 
 import { _GSPS2PDF } from '../ghostscript-utils';
-import { LogError } from './Error/LogHelper';
+
+import Logger from '../helpers/Error/Logger';
+
+const logger = new Logger('pdfconverter.vue');
+
 
 function compressPDF(pdf, filename, compressionLevel, onLoadComplete, onProgress, onStatusUpdate) {
   const dataObject = { psDataURL: pdf };
@@ -15,7 +19,7 @@ function compressPDF(pdf, filename, compressionLevel, onLoadComplete, onProgress
       compressionLevel
     );
   } catch (error) {
-    LogError(error, 'PdfHelper.js');
+    logger.logError(error);
     throw error;
   }
 }
