@@ -1,4 +1,3 @@
-//FIXME Rename states to something relevant
 const CompressionState = {
   NO_FILE_SELECTED: 'NO_FILE_SELECTED',
   FILE_SELECTED: 'FILE_SELECTED',
