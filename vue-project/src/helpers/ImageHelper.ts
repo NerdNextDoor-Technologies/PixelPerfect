@@ -10,7 +10,7 @@ export function resizeImageByResolution(imageElement: HTMLImageElement, targetIm
   return canvasElement.toDataURL('image/jpeg', qualityFactor);
 }
 
-export function resizedImageByFileSize(imageElement: HTMLImageElement, targetSizeInBytes: number): string {
+export function resizeImageByFileSize(imageElement: HTMLImageElement, targetSizeInBytes: number): string {
   const minimumImageResolution = { width: 50, height: 50 }; // Minimum allowable dimensions to avoid too much reduction
   let qualityFactor = 1.0;
   const targetImageResolution = new ImageResolution(imageElement.width, imageElement.height);

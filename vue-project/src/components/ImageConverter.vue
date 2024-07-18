@@ -2,7 +2,7 @@
   <div id="app">
     <!-- Navbar -->
     <nav class="navbar">
-      <a href="#" class="navbar-brand">Image App</a>
+      <a href="/" class="navbar-brand">Image App</a>
       <ul class="navbar-nav">
         <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
         <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
@@ -47,10 +47,12 @@
         <label>
           <input type="checkbox" v-model="appStateInstance.keepAspectRatio"> Keep Aspect Ratio
         </label>
-        <div class="buttons">
+        <div class="submit-button">
           <button @click="resizeImageByResolution"
-            :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded"
-            :class="{ blurred: appStateInstance.buttonsDisabled }">Submit</button>
+            :disabled="appStateInstance.isDownloading || hasValidationErrors || appStateInstance.buttonsDisabled || !isImageLoaded || hasErrors"
+            :class="{ blurred: appStateInstance.buttonsDisabled || hasErrors }">
+            Submit
+          </button>
           <button @click="resetImageForm"
             :disabled="appStateInstance.isDownloading || appStateInstance.buttonsDisabled || !isImageLoaded"
             :class="{ blurred: appStateInstance.buttonsDisabled }">Go Back</button>
@@ -81,7 +83,7 @@
 
 <script>
 import { ImageData } from '@/models/image/ImageModel';
-import { resizeResolutionKeepingAspectRatioSame, resizeImageByResolution, resizedImageByFileSize } from '../helpers/ImageHelper';
+import { resizeResolutionKeepingAspectRatioSame, resizeImageByResolution, resizeImageByFileSize } from '../helpers/ImageHelper';
 import { AppState } from '@/models/app/AppState';
 import { Errors } from '@/models/image/ImageDimensionsErrorMessage';
 import { ImageResolution } from '@/models/image/ImageResolution.js';
@@ -103,6 +105,9 @@ export default {
     },
     isImageLoaded() {
       return !!this.imageModelInstance?.currentImageSrc;
+    },
+    hasErrors() {
+      return !!this.appStateInstance.errorMessage;
     }
   },
   methods: {
@@ -115,7 +120,6 @@ export default {
 
       try {
         this.imageModelInstance = await new ImageData(file);
-        console.log(this.imageModelInstance.currentResolution);
         this.updateState(true, false);
       } catch (error) {
         this.displayErrorMessage(error.message || "An error occurred while loading the image.");
@@ -176,7 +180,7 @@ export default {
       img.src = this.imageModelInstance.currentImageSrc;
       img.onload = () => {
         try {
-          const reducedImageURL = resizedImageByFileSize(img, parseInt(this.selectedSize));
+          const reducedImageURL = resizeImageByFileSize(img, parseInt(this.selectedSize));
           this.createDownloadLinkAndTriggerDownload(reducedImageURL, `reduced-size-image-${this.selectedSize}.jpg`);
         } catch (error) {
           this.displayErrorMessage(error.message || "An error occurred while reducing the image size.");
