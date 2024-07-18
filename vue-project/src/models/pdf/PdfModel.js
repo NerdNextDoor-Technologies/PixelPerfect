@@ -1,11 +1,11 @@
-import { COMPRESSIONLEVEL } from "../enum/COMPRESSIONLEVEL";
-import { COMPRESSIONSTATE } from "../enum/CompressionState";
+import { COMPRESSION_LEVEL } from "../ENUM/COMPRESSION_LEVEL";
+import { COMPRESSION_STATE } from "../ENUM/COMPRESSION_STATE";
 
 class PdfData {
   constructor() {
 
     /** @type {string} */
-    this.filestate = COMPRESSIONSTATE.NO_FILE_SELECTED;
+    this.filestate = COMPRESSION_STATE.NO_FILE_SELECTED;
 
     /** @type {{ filename: string, url: string } | null} */
     this.selectedFileMetadata = null;
@@ -13,8 +13,8 @@ class PdfData {
     /** @type {URL} */
     this.downloadLink = '';
 
-    /** @type { COMPRESSIONLEVEL.LOW | COMPRESSIONLEVEL.MEDIUM | COMPRESSIONLEVEL.HIGH} */
-    this.compressionLevel = COMPRESSIONLEVEL.LOW;
+    /** @type { COMPRESSION_LEVEL.LOW | COMPRESSION_LEVEL.MEDIUM | COMPRESSION_LEVEL.HIGH} */
+    this.compressionLevel = COMPRESSION_LEVEL.LOW;
   }
 }
 
